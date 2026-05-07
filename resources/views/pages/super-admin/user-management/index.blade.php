@@ -119,7 +119,7 @@
                             </th>
                             <th scope="col" class="px-6 py-4 font-bold text-center">Username</th>
                             <th scope="col" class="px-6 py-4 font-bold text-center">Role</th>
-                            <th scope="col" class="px-6 py-4 font-bold text-center">NIP</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-center">NIP/NIM</th>
                             <th scope="col" class="px-6 py-4 text-right font-bold">Aksi</th>
                         </tr>
                     </thead>
@@ -131,7 +131,7 @@
                                     class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     <div class="flex items-center gap-3">
                                         <img class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600"
-                                            src="{{ $user->avatar ? \Illuminate\Support\Facades\Storage::disk('s3')->url($user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->nama) }}"
+                                            src="{{ $user->avatar ? url('/storage/private/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->nama) }}"
                                             alt="{{ $user->nama }}"
                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($user->nama) }}';">
 
@@ -161,7 +161,11 @@
                                 <td class="px-6 py-4 text-center">
                                     @php $roleRel = Str::camel($user->role); @endphp
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {{ $user->$roleRel ? $user->$roleRel->nip : '-' }}
+                                        @if ($user->$roleRel)
+                                            {{ $user->role === 'mahasiswa' ? $user->$roleRel->nim : $user->$roleRel->nip }}
+                                        @else
+                                            -
+                                        @endif
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">

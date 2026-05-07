@@ -4,20 +4,20 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PenggunaAsn\ServiceController;
-use App\Http\Controllers\PenggunaAsn\ServiceEmailGovController;
+use App\Http\Controllers\Mahasiswa\ServiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DevTemplateController;
-use App\Http\Controllers\PenggunaAsn\ServiceSubDomainController;
-use App\Http\Controllers\PenggunaAsn\ServiceAppsCreationController;
-use App\Http\Controllers\PenggunaAsn\ServiceComplaintSystemController;
-use App\Http\Controllers\PenggunaAsn\SubmissionController;
-use App\Http\Controllers\PenggunaAsn\ServiceHistoryTicketController;
 use App\Http\Controllers\Operator\TicketController as OperatorTicketController;
 use App\Http\Controllers\Admin\SiemController;
-use App\Http\Controllers\Kabid\UsulanKabidController; 
-
-
+use App\Http\Controllers\Kabid\PersetujuanKabidController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\FileController;
+// use App\Http\Controllers\Mahasiswa\ServiceSubDomainController;
+// use App\Http\Controllers\Mahasiswa\ServiceAppsCreationController;
+// use App\Http\Controllers\Mahasiswa\ServiceComplaintSystemController;
+use App\Http\Controllers\Mahasiswa\DetailSuratIzinPermohonan;
+use App\Http\Controllers\Mahasiswa\ServiceHistoryTicketController;
+// use App\Http\Controllers\Mahasiswa\ServiceEmailGovController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +28,6 @@ use App\Http\Controllers\Kabid\UsulanKabidController;
 Route::get('/error/{code}', function ($code) {
     abort($code);
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -41,13 +40,20 @@ Route::get('/', function () {
     return view('welcome');
 })->name('landing');
 
-
 /*
 |--------------------------------------------------------------------------
 | Guest Routes (Belum Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
+
+    // Halaman Register
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->name('register');
+
+    // Proses Register
+    Route::post('/register', [RegisterController::class, 'register']);
 
     // Halaman Login
     Route::get('/login', function () {
@@ -58,7 +64,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])
         ->name('login.post');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -71,9 +76,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    // Edit profile
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    // Rute untuk akses file di storage private
+    Route::get('/storage/private/{path}', [FileController::class, 'show'])
+    ->where('path', '.*')
+    ->middleware('auth')
+    ->name('file.show');
+
+        // Edit profile
+
+// Route untuk halaman profil
+Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
+/**
+ * Route khusus untuk menampilkan avatar dari storage private
+ * Menggunakan parameter {filename} untuk mencari file di storage/app/avatars/
+ */
+Route::get('/user/avatar/{filename}', function ($filename) {
+    $path = 'avatars/' . $filename;
+
+    // Pastikan file ada di storage/app/avatars
+    if (!Storage::disk('local')->exists($path)) {
+        abort(404);
+    }
+
+    // Mengembalikan file sebagai response gambar
+    return Storage::disk('local')->response($path);
+})->name('avatar.display')->middleware('auth');
 
     // Proses Logout
     Route::post('/logout', [LoginController::class, 'logout'])
@@ -86,6 +115,10 @@ Route::middleware('auth')->group(function () {
     */
     Route::middleware('can:super-admin-only')->group(function () {
 
+        Route::get('user-management/pending-mahasiswa', [UserManagementController::class, 'pendingMahasiswa'])
+            ->name('user-management.pending');
+        Route::post('user-management/activate/{uuid}', [UserManagementController::class, 'activate'])
+            ->name('user-management.activate');
         //User management
         Route::resource('user-management', UserManagementController::class)
             ->names('user-management')
@@ -96,10 +129,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/security-logs', 'securityLogs')->name('security-logs');
             Route::get('/audit-trails', 'auditTrails')->name('audit-trails');
         });
+
     });
-
-
-
 
     /*
     |----------------------------------------------------------------------
@@ -111,65 +142,62 @@ Route::middleware('auth')->group(function () {
         // Halaman Meja Kerja
         Route::get('workdesk', [OperatorTicketController::class, 'workDesk'])->name('ticket.workdesk');
 
-        Route::prefix('dev')->group(function () {
-            Route::get('/upload-template', [DevTemplateController::class, 'index'])->name('dev.template.index');
-            Route::post('/upload-template', [DevTemplateController::class, 'store'])->name('dev.template.store');
-        });
-
         // Proses Ambil Tiket
         Route::post('ticket/{uuid}/handle', [OperatorTicketController::class, 'handle'])->name('ticket.handle');
+
+        Route::get('/ticket/{uuid}/preview-pdf', [OperatorTicketController::class, 'previewPdf'])->name('ticket.preview-pdf');
+        Route::get('/ticket/{uuid}/download-docx', [OperatorTicketController::class, 'downloadDocx'])->name('ticket.download-docx');
 
         // Proses Selesaikan Tiket
         Route::resource('ticket', OperatorTicketController::class)
             ->parameters(['ticket' => 'uuid'])
             ->only(['index', 'show', 'update', 'destroy']);
 
-
         Route::get('riwayat-tiket', [OperatorTicketController::class, 'history'])->name('ticket.history');
     });
 
     /*
     |----------------------------------------------------------------------
-    | Khusus pengguna asn
+    | Khusus mahasiswa
     |----------------------------------------------------------------------
     */
 
-    Route::middleware('can:pengguna_asn-only')->group(function () {
+    Route::middleware('can:mahasiswa-only')->group(function () {
 
         Route::resource('services', ServiceController::class);
 
-        // RUTE UNTUK DOWNLOAD Email Gov
-        Route::get('services/email-gov/download/{uuid}', [ServiceEmailGovController::class, 'download'])
-            ->name('email.download');
+        // // RUTE UNTUK DOWNLOAD Email Gov
+        // Route::get('services/email-gov/download/{uuid}', [ServiceEmailGovController::class, 'download'])
+        //     ->name('email.download');
 
-        // Rute baru untuk Email E-Gov
-        Route::resource('services-email-e-gov', ServiceEmailGovController::class);
+        // // Rute baru untuk Email E-Gov
+        // Route::resource('services-email-e-gov', ServiceEmailGovController::class);
 
-        //Rute baru untuk Sub Domain
-        Route::resource('service-sub-domain', ServiceSubDomainController::class);
+        // //Rute baru untuk Sub Domain
+        // Route::resource('service-sub-domain', ServiceSubDomainController::class);
 
-        //RUTE DOWNLOAD SUBDOMAIN
-        Route::get('services/subdomain/download/{uuid}', [ServiceSubDomainController::class, 'download'])
-            ->name('subdomain.download');
+        // //RUTE DOWNLOAD SUBDOMAIN
+        // Route::get('services/subdomain/download/{uuid}', [ServiceSubDomainController::class, 'download'])
+        //     ->name('subdomain.download');
 
-        //Rute baru untuk Pembuatan Apps
-        Route::get('/service-app-creation/download/{uuid}', [ServiceAppsCreationController::class, 'download'])->name('appscreation.download');
-        Route::resource('service-app-creation', ServiceAppsCreationController::class);
+        // //Rute baru untuk Pembuatan Apps
+        // Route::get('/service-app-creation/download/{uuid}', [ServiceAppsCreationController::class, 'download'])->name('appscreation.download');
+        // Route::resource('service-app-creation', ServiceAppsCreationController::class);
 
-
-        //Rute untuk pengaduan
-        Route::resource('service-complaint-system', ServiceComplaintSystemController::class);
-
-
-        //Rute Submission
-        Route::post('/submission/{uuid}/upload', [SubmissionController::class, 'uploadDocument'])->name('submission.upload');
-        Route::resource('submission', SubmissionController::class);
-
+        // //Rute untuk pengaduan
+        // Route::resource('service-complaint-system', ServiceComplaintSystemController::class);
+        Route::resource('detail', DetailSuratIzinPermohonan::class);
         //Rute History Tiket
         Route::resource('history', ServiceHistoryTicketController::class);
-        
-        //Rute Scanner Image
-        Route::view('/ai-scanner', 'pages.pengguna-asn.layanan.test-scanner')->name('test.scanner');
+        Route::post('services/autosave', [ServiceController::class, 'autosave'])
+             ->middleware('throttle:30,1') // Maksimal 30 request per menit
+             ->name('izin-penelitian.autosave');
+
+        Route::post('history/{uuid}/revisi', [ServiceHistoryTicketController::class, 'revisi'])
+         ->name('history.revisi');
+
+        // //Rute Scanner Image
+        // Route::view('/ai-scanner', 'pages.mahasiswa.layanan.test-scanner')->name('test.scanner');
     });
 
     /*
@@ -178,15 +206,12 @@ Route::middleware('auth')->group(function () {
     |----------------------------------------------------------------------
     */
     Route::middleware('can:kabid-only')->group(function () {
-        
+
         // Rute untuk fitur Usulan Prioritas Tiket
-        Route::resource('usulan', UsulanKabidController::class)
-             ->names('kabid.usulan')
-             ->parameters(['usulan' => 'uuid'])
-             ->only(['index', 'create', 'store', 'show', 'destroy']);
+        Route::post('tiket/{uuid}/proses', [PersetujuanKabidController::class, 'proses'])
+            ->name('kabid.tiket.proses');
 
+        Route::get('tiket/{uuid}/preview-pdf', [PersetujuanKabidController::class, 'previewPdf'])
+            ->name('kabid.tiket.preview');
     });
-
-    
 });
-

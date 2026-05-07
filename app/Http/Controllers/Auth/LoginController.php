@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\LogKeamanan;
 
+
 class LoginController extends Controller
 {
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -25,6 +27,27 @@ class LoginController extends Controller
         $userAgent = $request->header('User-Agent');
 
         if (Auth::attempt($credentials, $remember)) {
+            $user = Auth::user();
+
+            // --- PENGECEKAN STATUS KHUSUS MAHASISWA ---
+            if ($user->role === 'mahasiswa') {
+                $status = $user->mahasiswa->status_akun ?? null;
+
+                if ($status !== 'aktif') {
+                    Auth::logout();
+                    $errorMessage = 'Akun Anda belum aktif. Silakan tunggu verifikasi admin.';
+
+                    if ($status === 'ditolak') {
+                        $errorMessage = 'Mohon maaf, pendaftaran akun Anda ditolak. Silakan hubungi admin untuk informasi lebih lanjut.';
+                    }
+
+                    return back()->withErrors([
+                        'username' => $errorMessage
+                    ])->onlyInput('username');
+                }
+            }
+            // ------------------------------------------
+
             $request->session()->regenerate();
             LogKeamanan::create([
                 'users_id' => Auth::id(),

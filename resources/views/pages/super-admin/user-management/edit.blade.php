@@ -59,6 +59,9 @@
                         <input type="text" name="nama" value="{{ $user->nama }}"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                             required>
+                        @error('nama')
+                            <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                     {{-- Email --}}
                     <div>
@@ -66,6 +69,9 @@
                         <input type="email" name="email" value="{{ $user->email }}"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             required>
+                        @error('email')
+                            <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                     {{-- Username --}}
                     <div>
@@ -73,42 +79,64 @@
                         <input type="text" name="username" value="{{ old('username', $user->username) }}"
                             class="bg-gray-50 border {{ $errors->has('username') ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white"
                             required>
+                        @error('username')
+                            <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
-                    {{-- NIP --}}
-                    <div>
+
+                    {{-- Container NIP (Hanya tampil untuk Kabid/Operator) --}}
+                    <div id="nip_group"
+                        class="{{ in_array($user->role, ['kabid', 'operator', 'super_admin']) ? '' : 'hidden' }}">
                         <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">NIP</label>
-                        <input type="text" name="nip" value="{{ old('nip', $nip) }}" maxlength="18"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="199001012015011001"
-                            class="bg-gray-50 border {{ $errors->has('nip') ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white"
-                            required>
+                        <input type="text" name="nip" id="nip" value="{{ old('nip', $nip ?? '') }}"
+                            maxlength="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                            placeholder="199001012015011001"
+                            class="bg-gray-50 border {{ $errors->has('nip') ? 'border-red-500' : 'border-gray-300' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white">
                         @error('nip')
                             <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- Container NIM (Hanya tampil untuk Mahasiswa) --}}
+                    <div id="nim_group" class="{{ $user->role == 'mahasiswa' ? '' : 'hidden' }}">
+                        <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">NIM</label>
+                        <input type="text" name="nim" id="nim" value="{{ old('nim', $nim ?? '') }}"
+                            maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="2305001"
+                            class="bg-gray-50 border {{ $errors->has('nim') ? 'border-red-500' : 'border-gray-300' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white">
+                        @error('nim')
+                            <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     {{-- Role --}}
                     <div>
                         <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">Role</label>
-                        <select name="role"
+                        <select name="role" id="role_select"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                             <option value="super_admin" {{ $user->role == 'super_admin' ? 'selected' : '' }}>Super Admin
                             </option>
-                            <option value="pengguna_asn" {{ $user->role == 'pengguna_asn' ? 'selected' : '' }}>Pengguna ASN
+                            <option value="mahasiswa" {{ $user->role == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa
                             </option>
                             <option value="kabid" {{ $user->role == 'kabid' ? 'selected' : '' }}>Kabid</option>
                             <option value="operator" {{ $user->role == 'operator' ? 'selected' : '' }}>Operator</option>
                         </select>
                     </div>
+
                     {{-- WhatsApp --}}
                     <div>
                         <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">Nomor WhatsApp</label>
                         <input type="text" name="no_wa" value="{{ old('no_wa', $user->no_wa) }}" maxlength="13"
                             oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                             class="bg-gray-50 border {{ $errors->has('no_wa') ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white">
+                        @error('no_wa')
+                            <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     {{-- Alamat --}}
                     <div class="md:col-span-2">
-                        <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">Alamat Lengkap</label>
+                        <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">Alamat
+                            Lengkap</label>
                         <textarea name="alamat" rows="3"
                             class="bg-gray-50 border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white transition-colors
                             {{ $errors->has('alamat') ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600' }}"
@@ -128,7 +156,7 @@
                             {{-- Image Preview --}}
                             <img id="avatar-preview"
                                 class="w-20 h-20 rounded-full object-cover ring-4 ring-white dark:ring-gray-800 shadow-lg"
-                                src="{{ $user->avatar ? \Illuminate\Support\Facades\Storage::disk('s3')->url($user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->nama) }}"
+                                src="{{ $user->avatar ? url('/storage/private/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->nama) }}"
                                 alt="current-avatar"
                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($user->nama) }}';">
                         </div>

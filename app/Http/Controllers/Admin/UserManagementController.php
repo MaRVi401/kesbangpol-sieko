@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\SuperAdmin;
-use App\Models\PenggunaAsn;
 use App\Models\Kabid;
 use App\Models\Operator;
 use Illuminate\Http\Request;
@@ -16,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
 use App\Models\JejakAudit;
+use App\Models\Mahasiswa;
 
 class UserManagementController extends Controller
 {
@@ -42,7 +42,7 @@ class UserManagementController extends Controller
                     ->orWhereHas('superAdmin', function ($sq) use ($search) {
                         $sq->where('nip', 'LIKE', "%{$search}%");
                     })
-                    ->orWhereHas('penggunaAsn', function ($sq) use ($search) {
+                    ->orWhereHas('mahasiswa', function ($sq) use ($search) {
                         $sq->where('nip', 'LIKE', "%{$search}%");
                     })
                     ->orWhereHas('kabid', function ($sq) use ($search) {
@@ -67,9 +67,9 @@ class UserManagementController extends Controller
     {
         return view('pages.super-admin.user-management.create');
     }
-
+    
     /**
-     * Store a newly created user in Minio (S3).
+     * Store a newly created user.
      */
     public function store(Request $request)
     {
@@ -77,28 +77,28 @@ class UserManagementController extends Controller
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'username' => 'required|string|unique:users,username',
-            'role'     => 'required|in:super_admin,pengguna_asn,kabid,operator',
-            'nip'      => 'required|numeric|digits:18',
+            'role'     => 'required|in:super_admin,mahasiswa,kabid,operator',
+            'nip'      => 'required_if:role,kabid,operator,super_admin|nullable|numeric|digits:18',
+            'nim'      => 'required_if:role,mahasiswa|nullable|numeric|digits:10',
             'no_wa'    => 'nullable|numeric|digits_between:10,13',
             'password' => 'required|min:8|confirmed',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'alamat'   => 'nullable|string',
         ];
-        $messages = $this->customMessages();
 
-        $request->validate($rules, $messages);
+        $request->validate($rules, $this->customMessages());
 
         DB::beginTransaction();
+        $avatarPath = null;
         try {
-            $avatarPath = null;
             if ($request->hasFile('avatar')) {
                 $file = $request->file('avatar');
                 $filename = 'avatars/' . Str::random(40) . '.webp';
                 $image = Image::read($file)->scale(width: 500)->encodeByExtension('webp', quality: 75);
-                Storage::disk('s3')->put($filename, (string) $image);
+                Storage::disk('local')->put($filename, (string) $image);
                 $avatarPath = $filename;
             }
 
-            // Simpan User Utama
             $user = User::create([
                 'nama'     => $request->nama,
                 'email'    => $request->email,
@@ -110,44 +110,64 @@ class UserManagementController extends Controller
                 'avatar'   => $avatarPath,
             ]);
 
-            // Simpan Detail Role (NIP)
-            $this->getRoleModel($request->role)::create([
+            $roleModel = $this->getRoleModel($request->role);
+
+            $detailData = [
                 'uuid'     => (string) Str::uuid(),
                 'users_id' => $user->uuid,
-                'nip'      => $request->nip,
-            ]);
+            ];
 
-            // Catat Audit setelah data berhasil dibuat
+            if ($request->role === 'mahasiswa') {
+                $detailData['nim'] = $request->nim;
+                $detailData['status_akun'] = 'aktif';
+            } else {
+                $detailData['nip'] = $request->nip;
+            }
+
+            $roleModel::create($detailData);
+
+            // 3. Catat Jejak Audit
             JejakAudit::create([
-                'users_id' => Auth::id(),
-                'aksi' => 'create',
+                'users_id'   => Auth::id(),
+                'aksi'       => 'create',
                 'nama_tabel' => 'users',
-                'record_id' => $user->uuid,
-                'data_baru' => $user->toArray(),
-                'ip_address' => request()->ip()
+                'record_id'  => $user->uuid,
+                'data_baru'  => $user->toArray(),
+                'ip_address' => $request->ip()
             ]);
 
             DB::commit();
             return redirect()->route('user-management.index')->with('success', 'User baru berhasil ditambahkan.');
+
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($avatarPath) {
+                Storage::disk('local')->delete($avatarPath);
+            }
             return back()->withErrors(['error' => 'Gagal sistem: ' . $e->getMessage()])->withInput();
         }
     }
+
 
     /**
      * Show the form for editing the specified user.
      */
     public function edit(User $user)
     {
-        $roleRelation = Str::camel($user->role);
-        $nip = $user->$roleRelation ? $user->$roleRelation->nip : '';
+        $nip = '';
+        $nim = '';
 
-        return view('pages.super-admin.user-management.edit', compact('user', 'nip'));
+        if (in_array($user->role, ['kabid', 'operator', 'super_admin'])) {
+            $nip = $user->{$user->role} ? $user->{$user->role}->nip : '';
+        } elseif ($user->role === 'mahasiswa') {
+            $nim = $user->mahasiswa ? $user->mahasiswa->nim : '';
+        }
+
+        return view('pages.super-admin.user-management.edit', compact('user', 'nip', 'nim'));
     }
 
     /**
-     * Update user data and sync Minio (S3) storage.
+     * Update user data and sync Minio (Private Storage) storage.
      */
     public function update(Request $request, User $user)
     {
@@ -155,8 +175,9 @@ class UserManagementController extends Controller
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $user->uuid . ',uuid',
             'username' => 'required|string|unique:users,username,' . $user->uuid . ',uuid',
-            'role'     => 'required|in:super_admin,pengguna_asn,kabid,operator',
-            'nip'      => 'required|numeric|digits:18',
+            'role'     => 'required|in:super_admin,mahasiswa,kabid,operator',
+            'nip'      => 'required_if:role,kabid,operator|nullable|numeric|digits:18',
+            'nim'      => 'required_if:role,mahasiswa|nullable|numeric|digits:10',
             'no_wa'    => 'nullable|numeric|digits_between:10,13',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|min:8|confirmed',
@@ -182,30 +203,46 @@ class UserManagementController extends Controller
 
             if ($request->hasFile('avatar')) {
                 if ($user->avatar) {
-                    Storage::disk('s3')->delete($user->avatar);
+                    Storage::disk('local')->delete($user->avatar);
                 }
                 $filename = 'avatars/' . Str::random(40) . '.webp';
                 $image = Image::read($request->file('avatar'))->scale(width: 500)->encodeByExtension('webp', quality: 75);
-                Storage::disk('s3')->put($filename, (string) $image);
+                Storage::disk('local')->put($filename, (string) $image);
                 $user->avatar = $filename;
             }
 
             $user->save();
 
             // Sinkronisasi Tabel Role
+            $roleModel = $this->getRoleModel($request->role);
+            $oldRoleModel = $this->getRoleModel($oldRole);
+
             if ($oldRole !== $request->role) {
-                $this->getRoleModel($oldRole)::where('users_id', $user->uuid)->delete();
-                $this->getRoleModel($request->role)::create([
+                $oldRoleModel::where('users_id', $user->uuid)->delete();
+
+                $newData = [
                     'uuid' => (string) Str::uuid(),
                     'users_id' => $user->uuid,
-                    'nip' => $request->nip,
-                ]);
+                ];
+
+                if ($request->role === 'mahasiswa') {
+                    $newData['nim'] = $request->nim;
+                    $newData['status_akun'] = 'aktif';
+                } else {
+                    $newData['nip'] = $request->nip;
+                }
+
+                $roleModel::create($newData);
             } else {
-                // Gunakan updateOrCreate untuk memastikan record detail role ada
-                $this->getRoleModel($request->role)::updateOrCreate(
-                    ['users_id' => $user->uuid],
-                    ['nip' => $request->nip]
-                );
+                if ($request->role === 'mahasiswa') {
+                    $roleModel::where('users_id', $user->uuid)->update([
+                        'nim' => $request->nim
+                    ]);
+                } else if (in_array($request->role, ['kabid', 'operator', 'super_admin'])) {
+                    $roleModel::where('users_id', $user->uuid)->update([
+                        'nip' => $request->nip
+                    ]);
+                }
             }
 
             JejakAudit::create([
@@ -227,7 +264,7 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Remove user and clean up Minio (S3) storage.
+     * Remove user and clean (Private Storage).
      */
     public function destroy(User $user)
     {
@@ -245,7 +282,7 @@ class UserManagementController extends Controller
         DB::beginTransaction();
         try {
             if ($user->avatar) {
-                Storage::disk('s3')->delete($user->avatar);
+                Storage::disk('local')->delete($user->avatar);
             }
 
             JejakAudit::create([
@@ -266,17 +303,66 @@ class UserManagementController extends Controller
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
+    public function pendingMahasiswa()
+    {
+        // Mengambil user dengan role mahasiswa yang status_akun-nya 'pending'
+        $pendingUsers = User::where('role', 'mahasiswa')
+            ->whereHas('mahasiswa', function ($query) {
+                $query->where('status_akun', 'pending');
+            })
+            ->with('mahasiswa')
+            ->latest()
+            ->paginate(10);
+
+        return view('pages.super-admin.user-management.pending', compact('pendingUsers'));
+    }
+
+    // Metode untuk mengaktifkan atau menolak akun mahasiswa
+    public function activate(Request $request, string $uuid)
+    {
+        $request->validate([
+            'status' => 'required|in:aktif,ditolak'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $mahasiswa = Mahasiswa::where('users_id', $uuid)->firstOrFail();
+            $statusLama = $mahasiswa->status_akun;
+
+            $mahasiswa->update([
+                'status_akun' => $request->status
+            ]);
+
+            // Catat Audit
+            JejakAudit::create([
+                'users_id' => Auth::id(),
+                'aksi' => 'update',
+                'nama_tabel' => 'mahasiswa',
+                'record_id' => $mahasiswa->uuid,
+                'data_lama' => ['status_akun' => $statusLama],
+                'data_baru' => ['status_akun' => $request->status],
+                'ip_address' => request()->ip()
+            ]);
+
+            DB::commit();
+            $msg = $request->status == 'aktif' ? 'Akun berhasil diaktifkan.' : 'Akun telah ditolak.';
+            return back()->with('success', $msg);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memproses aktivasi: ' . $e->getMessage());
+        }
+    }
 
     /**
      * Helper to get Role Model class.
      */
-    private function getRoleModel($role)
+    private function getRoleModel(string $role)
     {
         return [
             'super_admin'  => SuperAdmin::class,
-            'pengguna_asn' => PenggunaAsn::class,
             'kabid'        => Kabid::class,
             'operator'     => Operator::class,
+            'mahasiswa'    => Mahasiswa::class,
         ][$role];
     }
 
@@ -300,6 +386,10 @@ class UserManagementController extends Controller
             'avatar.image'      => 'File yang diunggah harus berupa gambar.',
             'avatar.mimes'      => 'Format gambar harus JPG, JPEG, PNG, atau WebP.',
             'avatar.max'        => 'Ukuran foto terlalu besar, maksimal adalah 2MB.',
+            'nip.required_if'   => 'NIP wajib diisi jika Anda memilih role ASN/Pejabat.',
+            'nim.required_if'   => 'NIM wajib diisi jika Anda memilih role Mahasiswa.',
+            'nim.digits'        => 'NIM harus berjumlah 10 digit.',
+            'nim.numeric'       => 'NIM harus berupa angka.',
         ];
     }
 }

@@ -1,3 +1,5 @@
+import Swal from 'sweetalert2';
+
 const passwordInput = document.getElementById('password');
 const toggleButton = document.getElementById('togglePassword');
 const eyeIcon = document.getElementById('eyeIcon');
@@ -23,3 +25,26 @@ toggleButton.addEventListener('click', () => {
     eyeIcon.innerHTML = isPassword ? eyeOffPath : eyePath;
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const sessionData = document.getElementById('session-data');
+    const successMessage = sessionData.getAttribute('data-success');
+    const errorMessage = sessionData.getAttribute('data-error');
+
+    if (successMessage) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: successMessage,
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+
+    if (errorMessage) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: errorMessage
+        });
+    }
+});

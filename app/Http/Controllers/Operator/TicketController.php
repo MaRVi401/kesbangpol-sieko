@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tiket;
-use App\Models\PrioritasTiketKadis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -12,6 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Models\JejakAudit;
+use App\Services\WordTemplateServiceIzinPenelitian;
+use App\Models\PenandatanganSurat;
 
 class TicketController extends Controller
 {
@@ -19,12 +20,9 @@ class TicketController extends Controller
     {
         $search = $request->input('search');
 
-        $revisiTiketIds = PrioritasTiketKadis::where('status_persetujuan', 'disetujui')->pluck('tiket_id');
-
-        $query = Tiket::with(['user', 'layanan', 'detailPengaduan'])
+        $query = Tiket::with(['user', 'layanan', 'suratIzinPenelitian'])
             ->where('status', 'diajukan')
-            ->whereNull('petugas_id')
-            ->whereNotIn('uuid', $revisiTiketIds);
+            ->whereNull('petugas_id');
 
         if ($search) {
             $query->where(function (Builder $q) use ($search) {
@@ -43,34 +41,7 @@ class TicketController extends Controller
         return view('pages.operator.ticket.index', compact('tickets'));
     }
 
-    public function revisiKadis(Request $request): View
-    {
-        $search = $request->input('search');
-
-        $revisiTiketIds = PrioritasTiketKadis::where('status_persetujuan', 'disetujui')->pluck('tiket_id');
-
-        $query = Tiket::with(['user', 'layanan', 'detailPengaduan'])
-            ->where('status', 'diajukan')
-            ->whereIn('uuid', $revisiTiketIds)
-            ->where('petugas_id', $request->user()->uuid);
-
-        if ($search) {
-            $query->where(function (Builder $q) use ($search) {
-                $q->where('no_tiket', 'ilike', "%{$search}%")
-                    ->orWhereHas('user', function (Builder $qu) use ($search) {
-                        $qu->where('nama', 'ilike', "%{$search}%");
-                    })
-                    ->orWhereHas('layanan', function (Builder $ql) use ($search) {
-                        $ql->where('nama', 'ilike', "%{$search}%");
-                    });
-            });
-        }
-
-        $tickets = $query->latest()->paginate(10);
-
-        return view('pages.operator.ticket.revisi', compact('tickets'));
-    }
-
+    
     public function handle(Request $request, string $uuid): RedirectResponse
     {
         $ticket = Tiket::where('uuid', $uuid)
@@ -80,14 +51,14 @@ class TicketController extends Controller
         DB::transaction(function () use ($ticket, $request) {
             $ticket->update([
                 'petugas_id' => $request->user()->uuid,
-                'status'     => 'ditangani',
+                'status'     => 'verifikasi kelengkapan',
             ]);
 
             DB::table('riwayat_status_tiket')->insert([
                 'uuid'       => (string) Str::uuid(),
                 'tiket_id'   => $ticket->uuid,
                 'users_id'   => $request->user()->uuid,
-                'status'     => 'ditangani',
+                'status'     => 'verifikasi kelengkapan',
                 'created_at' => now(),
             ]);
 
@@ -97,7 +68,7 @@ class TicketController extends Controller
                 'nama_tabel' => 'tiket',
                 'record_id' => $ticket->uuid,
                 'data_lama' => ['status' => 'diajukan', 'petugas_id' => null],
-                'data_baru' => ['status' => 'ditangani', 'petugas_id' => $request->user()->uuid],
+                'data_baru' => ['status' => 'verifikasi kelengkapan', 'petugas_id' => $request->user()->uuid],
                 'ip_address' => $request->ip()
             ]);
         });
@@ -111,9 +82,9 @@ class TicketController extends Controller
     {
         $search = $request->input('search');
 
-        $query = Tiket::with(['user', 'layanan', 'detailPengaduan'])
+        $query = Tiket::with(['user', 'layanan', 'suratIzinPenelitian'])
             ->where('petugas_id', $request->user()->uuid)
-            ->where('status', 'ditangani');
+            ->where('status', 'verifikasi kelengkapan');
 
         if ($search) {
             $query->where(function (Builder $q) use ($search) {
@@ -129,7 +100,9 @@ class TicketController extends Controller
 
         $tickets = $query->latest()->paginate(10);
 
-        return view('pages.operator.ticket.workdesk', compact('tickets'));
+        $penandatangan_list = PenandatanganSurat::all();
+
+        return view('pages.operator.ticket.workdesk', compact('tickets', 'penandatangan_list'));
     }
 
     public function show(string $uuid): View
@@ -144,7 +117,7 @@ class TicketController extends Controller
     public function update(Request $request, string $uuid): RedirectResponse
     {
         $request->validate([
-            'status'   => 'required|in:selesai,ditolak',
+            'status'   => 'required|in:verifikasi lengkap,verifikasi gagal,diterima,ditolak',
             'komentar' => 'required|string|min:1',
         ]);
 
@@ -183,12 +156,10 @@ class TicketController extends Controller
         $filterTime = $request->input('filter_time');
         $userUuid = $request->user()->uuid;
 
-        
-        $query = Tiket::with(['user', 'layanan', 'detailPengaduan'])
+        $query = Tiket::with(['user', 'layanan', 'suratIzinPenelitian'])
             ->where('petugas_id', $userUuid)
-            ->whereIn('status', ['selesai', 'ditolak']);
+            ->whereIn('status', ['verifikasi lengkap', 'verifikasi gagal', 'diterima', 'ditolak']);
 
-        
         if ($filterTime) {
             $now = now();
             if ($filterTime === 'hari') {
@@ -213,9 +184,46 @@ class TicketController extends Controller
             });
         }
 
-       
         $tickets = $query->latest('updated_at')->paginate(10);
 
         return view('pages.operator.ticket.history', compact('tickets'));
+    }
+
+    public function previewPdf(Request $request, string $uuid, WordTemplateServiceIzinPenelitian $wordService)
+    {
+        $ticket = Tiket::with(['suratIzinPenelitian'])
+            ->where('uuid', $uuid)
+            ->firstOrFail();
+
+        if (!$ticket) {
+            abort(404);
+        }
+
+        if (!$ticket->suratIzinPenelitian) {
+            abort(404);
+        }
+
+        $penandatangan = PenandatanganSurat::find($request->query('penandatangan_id'));
+
+        $pdfPath = $wordService->generatePdfPreview($ticket->suratIzinPenelitian, $ticket->no_tiket, $penandatangan);
+
+        return redirect()->route('file.show', ['path' => $pdfPath]);
+    }
+
+
+    public function downloadDocx(Request $request, string $uuid, WordTemplateServiceIzinPenelitian $wordService)
+    {
+        $ticket = Tiket::with(['suratIzinPenelitian'])
+            ->where('uuid', $uuid)
+            ->firstOrFail();
+
+        if (!$ticket || !$ticket->suratIzinPenelitian) {
+            abort(404);
+        }
+
+        $penandatangan = PenandatanganSurat::find($request->query('penandatangan_id'));
+
+        // Metode generateDokumen akan langsung mengembalikan response()->download()
+        return $wordService->generateDokumen($ticket->suratIzinPenelitian, $ticket->no_tiket, $penandatangan);
     }
 }

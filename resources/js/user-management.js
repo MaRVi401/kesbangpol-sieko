@@ -128,4 +128,26 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+
+    const roleSelect = document.getElementById('role_select');
+    const nipGroup = document.getElementById('nip_group');
+    const nimGroup = document.getElementById('nim_group');
+
+    if (roleSelect && nipGroup && nimGroup) {
+        function toggleInputs() {
+            const role = roleSelect.value;
+
+            nipGroup.classList.add('hidden');
+            nimGroup.classList.add('hidden');
+
+            if (role === 'kabid' || role === 'operator' || role === 'super_admin') {
+                nipGroup.classList.remove('hidden');
+            } else if (role === 'mahasiswa') {
+                nimGroup.classList.remove('hidden');
+            }
+        }
+
+        toggleInputs();
+        roleSelect.addEventListener('change', toggleInputs);
+    }
 });
