@@ -14,107 +14,53 @@ class UserSeeder extends Seeder
     {
         Schema::disableForeignKeyConstraints();
         
-        // Truncate tabel sesuai migrasi terbaru
-        DB::table('users')->truncate();
-        DB::table('super_admin')->truncate();
-        DB::table('mahasiswa')->truncate();
-        DB::table('kabid')->truncate();
-        DB::table('operator')->truncate();
+        $tables = [
+            'users', 'super_admin', 'pemohon', 'petugas_verifikasi_data', 
+            'petugas_verifikasi_lapangan', 'analis_kebijakan_ahli_muda', 
+            'kabid_kesbak', 'sekban', 'kaban'
+        ];
+        foreach ($tables as $table) { DB::table($table)->truncate(); }
         
         Schema::enableForeignKeyConstraints();
 
-        // 1. Super Admin
-        $adminUuid = (string) Str::uuid();
-        DB::table('users')->insert([
-            'uuid'     => $adminUuid,
-            'nama'     => 'Jack',
-            'username' => 'superadmin',
-            'password' => Hash::make('12345678'),
-            'role'     => 'super_admin',
-            'email'    => 'jack@simdokum.local',
-            'no_wa'    => '081234567890',
-            'alamat'   => 'Kosan Sukabumi',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Data array untuk looping pembuatan user
+        $users = [
+            ['nama' => 'Jack Super', 'username' => 'superadmin', 'role' => 'super_admin', 'tabel_relasi' => 'super_admin', 'kolom' => ['nip' => '199001012024011001']],
+            ['nama' => 'Budi Pemohon', 'username' => 'pemohon', 'role' => 'pemohon', 'tabel_relasi' => 'pemohon', 'kolom' => ['nik_ketua' => '3212000000000001', 'nama_organisasi' => 'Ormas Bakti Negeri', 'status_akun' => 'aktif']],
+            ['nama' => 'Siti Verifikator Data', 'username' => 'petugas_data', 'role' => 'petugas_verifikasi_data', 'tabel_relasi' => 'petugas_verifikasi_data', 'kolom' => ['nip' => '198501012010011001']],
+            ['nama' => 'Agus Lapangan', 'username' => 'petugas_lapangan', 'role' => 'petugas_verifikasi_lapangan', 'tabel_relasi' => 'petugas_verifikasi_lapangan', 'kolom' => ['nip' => '198602022011011002']],
+            ['nama' => 'Dewi Analis', 'username' => 'analis', 'role' => 'analis_kebijakan_ahli_muda', 'tabel_relasi' => 'analis_kebijakan_ahli_muda', 'kolom' => ['nip' => '198003032005011003']],
+            ['nama' => 'Bapak Kabid', 'username' => 'kabid', 'role' => 'kabid_kesbak', 'tabel_relasi' => 'kabid_kesbak', 'kolom' => ['nip' => '197504042000011004']],
+            ['nama' => 'Bapak Sekban', 'username' => 'sekban', 'role' => 'sekban', 'tabel_relasi' => 'sekban', 'kolom' => ['nip' => '197005051998011005']],
+            ['nama' => 'Bapak Kaban', 'username' => 'kaban', 'role' => 'kaban', 'tabel_relasi' => 'kaban', 'kolom' => ['nip' => '196506061990011006']],
+        ];
 
-        DB::table('super_admin')->insert([
-            'uuid'     => (string) Str::uuid(),
-            'users_id' => $adminUuid,
-            'nip'      => '199001012024011001',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        foreach ($users as $u) {
+            $uuid = (string) Str::uuid();
+            
+            DB::table('users')->insert([
+                'uuid' => $uuid,
+                'nama' => $u['nama'],
+                'username' => $u['username'],
+                'password' => Hash::make('password'), // password default
+                'role' => $u['role'],
+                'email' => $u['username'] . '@mail.com',
+                'no_wa' => '0812' . rand(10000000, 99999999),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        // 2. Mahasiswa
-        $mhsUuid = (string) Str::uuid();
-        DB::table('users')->insert([
-            'uuid'     => $mhsUuid,
-            'nama'     => 'Mahasiswa Polindra',
-            'username' => 'mahasiswa',
-            'password' => Hash::make('password'),
-            'role'     => 'mahasiswa',
-            'email'    => 'mahasiswa@mail.com',
-            'no_wa'    => '081234567891',
-            'alamat'   => 'Jl. Lohbener Lama',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            // Insert ke tabel relasi rolenya
+            $relasiData = array_merge([
+                'uuid' => (string) Str::uuid(),
+                'users_id' => $uuid,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ], $u['kolom']);
 
-        DB::table('mahasiswa')->insert([
-            'uuid'        => (string) Str::uuid(),
-            'users_id'    => $mhsUuid,
-            'nim'         => '2203001',
-            'status_akun' => 'aktif',
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ]);
-        // 3. Operator
-        $opUuid = (string) Str::uuid();
-        DB::table('users')->insert([
-            'uuid'     => $opUuid,
-            'nama'     => 'Operator Layanan',
-            'username' => 'operator',
-            'password' => Hash::make('password'),
-            'role'     => 'operator',
-            'email'    => 'operator@mail.com',
-            'no_wa'    => '081234567892',
-            'alamat'   => 'Ruang Operator',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            DB::table($u['tabel_relasi'])->insert($relasiData);
+        }
 
-        DB::table('operator')->insert([
-            'uuid'     => (string) Str::uuid(),
-            'users_id' => $opUuid,
-            'nip'      => '198501012010011001',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // 4. Kabid
-        $kabidUuid = (string) Str::uuid();
-        DB::table('users')->insert([
-            'uuid'     => $kabidUuid,
-            'nama'     => 'Kepala Bidang',
-            'username' => 'kabid',
-            'password' => Hash::make('password'),
-            'role'     => 'kabid',
-            'email'    => 'kabid@mail.com',
-            'no_wa'    => '081234567893',
-            'alamat'   => 'Ruang Kabid',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('kabid')->insert([
-            'uuid'     => (string) Str::uuid(),
-            'users_id' => $kabidUuid,
-            'nip'      => '197501012000011001',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->command->info('Berhasil: UserSeeder telah dijalankan dengan skema role baru.');
+        $this->command->info('Berhasil: 8 User dengan Role berbeda telah dibuat.');
     }
 }

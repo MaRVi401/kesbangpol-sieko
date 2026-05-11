@@ -18,13 +18,13 @@ class ServiceSeeder extends Seeder
 
         DB::table('layanan')->insert([
             'uuid'             => (string) Str::uuid(),
-            'nama'             => 'Surat Permohonan Izin Penelitian',
+            'nama'             => 'Penerbitan Surat Keterangan Terdaftar (SKT) Ormas',
             'status_arsip'     => false,
             'status_prioritas' => 'sedang',
             'created_at'       => Carbon::now(),
             'updated_at'       => Carbon::now(),
         ]);
 
-        $this->command->info('Berhasil: ServiceSeeder telah menambahkan layanan tunggal.');
+        $this->command->info('Berhasil: ServiceSeeder telah menambahkan layanan SKT Ormas.');
     }
 }
