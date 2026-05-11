@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,18 @@ class Layanan extends Model
     public $incrementing = false;
     protected $keyType = 'string'; 
     
-    protected $fillable = ['nama', 'status_arsip', 'status_prioritas'];
+    protected $fillable = [
+        'nama', 
+        'status_arsip', 
+        'status_prioritas'
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status_arsip' => 'boolean',
+        ];
+    }
 
     public function tiket(): HasMany 
     { 

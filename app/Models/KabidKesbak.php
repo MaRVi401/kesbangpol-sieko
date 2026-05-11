@@ -1,14 +1,21 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Operator extends Model {
+class KabidKesbak extends Model {
     use HasUuids;
-    protected $table = 'operator';
+    
+    protected $table = 'kabid_kesbak';
     protected $primaryKey = 'uuid';
     protected $keyType = 'string';
     public $incrementing = false;
+    
     protected $fillable = ['users_id', 'nip'];
-    public function user() { return $this->belongsTo(User::class, 'users_id', 'uuid'); }
+    
+    public function user() { 
+        return $this->belongsTo(User::class, 'users_id', 'uuid'); 
+    }
 }

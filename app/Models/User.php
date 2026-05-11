@@ -43,33 +43,17 @@ class User extends Authenticatable
         ];
     }
 
-    public function superAdmin()
-    {
-        return $this->hasOne(SuperAdmin::class, 'users_id', 'uuid');
-    }
+    // Role Relations
+    public function superAdmin() { return $this->hasOne(SuperAdmin::class, 'users_id', 'uuid'); }
+    public function pemohon() { return $this->hasOne(Pemohon::class, 'users_id', 'uuid'); }
+    public function petugasVerifikasiData() { return $this->hasOne(PetugasVerifikasiData::class, 'users_id', 'uuid'); }
+    public function petugasVerifikasiLapangan() { return $this->hasOne(PetugasVerifikasiLapangan::class, 'users_id', 'uuid'); }
+    public function analisKebijakanAhliMuda() { return $this->hasOne(AnalisKebijakanAhliMuda::class, 'users_id', 'uuid'); }
+    public function kabidKesbak() { return $this->hasOne(KabidKesbak::class, 'users_id', 'uuid'); }
+    public function sekban() { return $this->hasOne(Sekban::class, 'users_id', 'uuid'); }
+    public function kaban() { return $this->hasOne(Kaban::class, 'users_id', 'uuid'); }
 
-    public function mahasiswa()
-    {
-        return $this->hasOne(Mahasiswa::class, 'users_id', 'uuid');
-    }
-
-    public function kabid()
-    {
-        return $this->hasOne(Kabid::class, 'users_id', 'uuid');
-    }
-
-    public function operator()
-    {
-        return $this->hasOne(Operator::class, 'users_id', 'uuid');
-    }
-
-    public function tiketDibuat()
-    {
-        return $this->hasMany(Tiket::class, 'users_id', 'uuid');
-    }
-
-    public function tiketDitangani()
-    {
-        return $this->hasMany(Tiket::class, 'petugas_id', 'uuid');
-    }
+    // Ticket Relations
+    public function tiketDibuat() { return $this->hasMany(Tiket::class, 'users_id', 'uuid'); }
+    public function tiketDitangani() { return $this->hasMany(Tiket::class, 'petugas_id', 'uuid'); }
 }

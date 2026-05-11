@@ -6,29 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RiwayatStatusTiket extends Model 
+class PermohonanSkt extends Model
 {
     use HasUuids;
-    
-    protected $table = 'riwayat_status_tiket';
+
+    protected $table = 'permohonan_skt';
     protected $primaryKey = 'uuid';
-    protected $keyType = 'string'; 
     public $incrementing = false;
-    
+    protected $keyType = 'string';
+
     protected $fillable = [
-        'tiket_id', 
-        'users_id', 
-        'status_sebelumnya',
-        'status_baru'
+        'tiket_id',
+        'nama_organisasi',
+        'bidang_kegiatan',
+        'alamat_sekretariat',
+        'nama_ketua',
+        'no_kontak',
+        'akta_pendirian_path',
+        'sk_kemenkumham_path',
+        'surat_domisili_path'
     ];
 
     public function tiket(): BelongsTo
     {
         return $this->belongsTo(Tiket::class, 'tiket_id', 'uuid');
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'users_id', 'uuid');
     }
 }

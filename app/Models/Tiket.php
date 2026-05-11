@@ -50,9 +50,19 @@ class Tiket extends Model
         return $this->belongsTo(Layanan::class, 'layanan_id', 'uuid');
     }
 
-    public function suratIzinPenelitian(): HasOne
+    public function permohonanSkt(): HasOne
     {
-        return $this->hasOne(SuratPermohonanIzinPenelitian::class, 'tiket_id', 'uuid');
+        return $this->hasOne(PermohonanSkt::class, 'tiket_id', 'uuid');
+    }
+
+    public function beritaAcaraLapangan(): HasOne
+    {
+        return $this->hasOne(BeritaAcaraLapangan::class, 'tiket_id', 'uuid');
+    }
+
+    public function draftSkt(): HasOne
+    {
+        return $this->hasOne(DraftSkt::class, 'tiket_id', 'uuid');
     }
 
     public function riwayatStatus(): HasMany
