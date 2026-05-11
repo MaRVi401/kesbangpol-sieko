@@ -1,0 +1,158 @@
+@extends('layouts.master')
+
+@section('title', 'Dashboard Petugas Verifikasi Lapangan')
+
+@section('content')
+    <div class="p-4 mt-14">
+        <div class="mb-8 border-b border-gray-200 pb-6 dark:border-gray-700">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <h2 class="text-xl md:text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+                        @php
+                            $hour = date('H');
+                            $sapaan = $hour < 12 ? 'Pagi' : ($hour < 15 ? 'Siang' : ($hour < 18 ? 'Sore' : 'Malam'));
+                        @endphp
+                        Selamat <span id="sapaan-teks">{{ $sapaan }}</span>,
+                        <span class="block md:inline text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-cyan-500 uppercase font-black">
+                            {{ auth()->user()->nama }}
+                        </span>
+                    </h2>
+                    <p class="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400 tracking-wider">
+                        Meja Kerja Petugas Verifikasi Lapangan
+                    </p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <div class="flex items-center justify-center md:justify-end space-x-3 md:space-x-4 bg-white dark:bg-gray-800 px-4 py-2 md:px-5 md:py-2.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md">
+                        <div class="flex flex-col items-center md:items-end border-r border-gray-200 dark:border-gray-600 pr-3 md:pr-4">
+                            <span id="realtime-clock" class="text-lg md:text-xl font-black font-mono text-blue-600 dark:text-blue-400 leading-none">00:00:00</span>
+                            <span class="text-[9px] md:text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">Waktu Server</span>
+                        </div>
+                        <div class="flex flex-col text-left">
+                            <span class="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 leading-none">
+                                {{ \Carbon\Carbon::now()->translatedFormat('l') }}
+                            </span>
+                            <span class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="p-5 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm dark:bg-blue-900/10 dark:border-blue-900/20">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">Tugas Verifikasi Lapangan</p>
+                    <i class="ti ti-map-pin text-blue-500 text-xl"></i>
+                </div>
+                <h5 class="text-3xl font-black text-blue-700 dark:text-blue-100">{{ $totalTugas }}</h5>
+            </div>
+
+            <div class="p-5 bg-green-50/50 border border-green-100 rounded-xl shadow-sm dark:bg-green-900/10 dark:border-green-900/20">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs font-bold uppercase text-green-600 dark:text-green-400 tracking-wider">Total Verifikasi Selesai</p>
+                    <i class="ti ti-clipboard-check text-green-500 text-xl"></i>
+                </div>
+                <h5 class="text-3xl font-black text-green-700 dark:text-green-100">{{ $totalSelesai }}</h5>
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col mb-8">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 flex justify-between items-center text-heading font-bold italic">
+                <h3 class="flex items-center text-gray-900 dark:text-white font-black">
+                    <i class="ti ti-list-check text-blue-600 me-2 text-xl"></i> Antrean Verifikasi Lapangan
+                </h3>
+            </div>
+
+            <div class="relative overflow-x-auto bg-white dark:bg-[#1e293b]">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-white dark:bg-[#1e293b] border-b border-gray-100 dark:border-gray-700/50">
+                        <tr>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">No. Tiket</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Organisasi</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Lokasi/Alamat</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                        @forelse($tiketVerifikasi as $tiket)
+                            <tr class="hover:bg-blue-50/30 dark:hover:bg-slate-700/40 transition-all duration-200">
+                                <td class="px-6 py-4">
+                                    <span class="inline-block px-2.5 py-1 text-xs font-black rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 tracking-wider">
+                                        {{ $tiket->no_tiket }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $tiket->permohonanSkt->nama_organisasi ?? 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
+                                    {{ $tiket->permohonanSkt->alamat_sekretariat ?? 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <a href="{{ route('petugas_lapangan.tiket.verifikasi', $tiket->uuid) }}" 
+                                        class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-map-2 mr-1"></i> Mulai Verifikasi
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center italic text-gray-400 dark:text-gray-500">
+                                    Belum ada penugasan verifikasi lapangan saat ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700">
+                {{ $tiketVerifikasi->links() }}
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30">
+                <h3 class="flex items-center text-gray-900 dark:text-white font-black italic">
+                    <i class="ti ti-history text-blue-600 me-2 text-xl"></i> Riwayat Verifikasi
+                </h3>
+            </div>
+            <div class="relative overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-white dark:bg-[#1e293b] border-b border-gray-100 dark:border-gray-700/50">
+                        <tr>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">No. Tiket</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Organisasi</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                        @forelse($tiketHistory as $history)
+                            <tr class="hover:bg-blue-50/30 dark:hover:bg-slate-700/40">
+                                <td class="px-6 py-4">
+                                    <span class="inline-block px-2.5 py-1 text-xs font-black rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        {{ $history->no_tiket }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $history->permohonanSkt->nama_organisasi ?? 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <a href="{{ route('petugas_lapangan.tiket.detail', $history->uuid) }}" class="text-blue-600 hover:underline font-bold text-xs">Lihat Berita Acara</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-10 text-center italic text-gray-400">Belum ada riwayat verifikasi yang diselesaikan.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700">
+                {{ $tiketHistory->links() }}
+            </div>
+        </div>
+    </div>
+@endsection
