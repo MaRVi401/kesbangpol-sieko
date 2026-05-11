@@ -43,7 +43,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('pemohon.dashboard', compact(
+        return view('pages.pemohon.dashboard', compact(
             'totalDiajukan', 
             'totalDiproses', 
             'totalSelesai', 

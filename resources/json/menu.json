@@ -24,51 +24,51 @@
                     "route": "siem.index"
                 }
             ]
-        },
-        {
-            "role": "mahasiswa",
-            "items": [
-                {
-                    "name": "Dashboard",
-                    "icon": "ti ti-layout-dashboard",
-                    "route": "dashboard"
-                },
-                {
-                    "name": "Form Pengajuan",
-                    "icon": "ti ti-file-download",
-                    "route": "services.index"
-                },
-                {
-                    "name": "Riwayat Status Tiket",
-                    "icon": "ti ti-clock",
-                    "route": "history.index"
-                }
-            ]
-        },
-        {
-            "role": "operator",
-            "items": [
-                {
-                    "name": "Dashboard",
-                    "icon": "ti ti-layout-dashboard",
-                    "route": "dashboard"
-                },
-                {
-                    "name": "Tiket Masuk",
-                    "icon": "ti ti-ticket",
-                    "route": "ticket.index"
-                },
-                {
-                    "name": "Tangani Tiket",
-                    "icon": "ti ti-briefcase",
-                    "route": "ticket.workdesk"
-                },
-                {
-                    "name": "Riwayat Ticket",
-                    "icon": "ti ti-clock",
-                    "route": "ticket.history"
-                }
-            ]
         }
+        // {
+        //     "role": "mahasiswa",
+        //     "items": [
+        //         {
+        //             "name": "Dashboard",
+        //             "icon": "ti ti-layout-dashboard",
+        //             "route": "dashboard"
+        //         },
+        //         {
+        //             "name": "Form Pengajuan",
+        //             "icon": "ti ti-file-download",
+        //             "route": "services.index"
+        //         },
+        //         {
+        //             "name": "Riwayat Status Tiket",
+        //             "icon": "ti ti-clock",
+        //             "route": "history.index"
+        //         }
+        //     ]
+        // },
+        // {
+        //     "role": "operator",
+        //     "items": [
+        //         {
+        //             "name": "Dashboard",
+        //             "icon": "ti ti-layout-dashboard",
+        //             "route": "dashboard"
+        //         },
+        //         {
+        //             "name": "Tiket Masuk",
+        //             "icon": "ti ti-ticket",
+        //             "route": "ticket.index"
+        //         },
+        //         {
+        //             "name": "Tangani Tiket",
+        //             "icon": "ti ti-briefcase",
+        //             "route": "ticket.workdesk"
+        //         },
+        //         {
+        //             "name": "Riwayat Ticket",
+        //             "icon": "ti ti-clock",
+        //             "route": "ticket.history"
+        //         }
+        //     ]
+        // }
     ]
 }
