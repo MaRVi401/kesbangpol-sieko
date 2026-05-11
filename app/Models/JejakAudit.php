@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class JejakAudit extends Model 
 {
@@ -12,7 +13,7 @@ class JejakAudit extends Model
     protected $table = 'jejak_audit';
     protected $primaryKey = 'uuid';
     public $incrementing = false;
-    protected $keyType = 'string'; // Tambahan
+    protected $keyType = 'string';
     
     protected $fillable = [
         'users_id', 
@@ -24,12 +25,15 @@ class JejakAudit extends Model
         'ip_address'
     ];
 
-    protected $casts = [
-        'data_lama' => 'array',
-        'data_baru' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'data_lama' => 'array',
+            'data_baru' => 'array',
+        ];
+    }
 
-    public function user() 
+    public function user(): BelongsTo
     { 
         return $this->belongsTo(User::class, 'users_id', 'uuid'); 
     }

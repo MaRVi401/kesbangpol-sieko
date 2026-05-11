@@ -15,27 +15,23 @@ class Tiket extends Model
     protected $table = 'tiket';
     protected $primaryKey = 'uuid';
     public $incrementing = false;
-    
-    
     protected $keyType = 'string';
 
- 
     protected $fillable = [
         'users_id', 
         'layanan_id', 
         'petugas_id', 
         'no_tiket', 
         'lampiran',
+        'deskripsi',
         'payload_draft',
-        'deskripsi', 
         'status'
     ];
-
 
     protected function casts(): array
     {
         return [
-            'payload_draft' => 'array', // Otomatis konversi JSON ke Array
+            'payload_draft' => 'array',
         ];
     }
 
@@ -54,10 +50,6 @@ class Tiket extends Model
         return $this->belongsTo(Layanan::class, 'layanan_id', 'uuid');
     }
 
-    /**
-     * Relasi ke model SuratPermohonanIzinPenelitian.
-     * Menggunakan HasOne karena satu tiket biasanya merujuk ke satu detail surat.
-     */
     public function suratIzinPenelitian(): HasOne
     {
         return $this->hasOne(SuratPermohonanIzinPenelitian::class, 'tiket_id', 'uuid');
@@ -72,6 +64,4 @@ class Tiket extends Model
     {
         return $this->hasMany(KomentarTiket::class, 'tiket_id', 'uuid');
     }
-
-    
 }

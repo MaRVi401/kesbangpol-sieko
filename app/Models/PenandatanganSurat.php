@@ -11,11 +11,8 @@ class PenandatanganSurat extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'penandatangan_surat';
-    
     protected $primaryKey = 'uuid';
-    
     public $incrementing = false;
-    
     protected $keyType = 'string';
     
     protected $fillable = [
