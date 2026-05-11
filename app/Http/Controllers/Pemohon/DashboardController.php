@@ -1,6 +1,4 @@
-<?php
-
-namespace App\Http\Controllers\Mahasiswa;
+namespace App\Http\Controllers\Pemohon;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tiket;
@@ -8,34 +6,28 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class DashboardControllerMahasiswa extends Controller
+class DashboardController extends Controller
 {
     public function index(Request $request): View
     {
-        $user = $request->user();
-        $userUuid = $user->uuid; 
+        $userUuid = $request->user()->uuid;
 
-        // 1. Tiket Menunggu (Belum diproses / Sedang Antre)
         $totalDiajukan = Tiket::where('users_id', $userUuid)
-            ->whereIn('status', ['belum diajukan', 'diajukan'])
+            ->whereIn('status', ['draft', 'diajukan'])
             ->count();
 
-        // 2. Tiket Sedang Diproses (Sudah diambil oleh operator)
         $totalDiproses = Tiket::where('users_id', $userUuid)
-            ->where('status', 'ditangani')
+            ->whereNotIn('status', ['draft', 'diajukan', 'skt_diterbitkan', 'skt_ditolak'])
             ->count();
 
-        // 3. Total Tiket Selesai
         $totalSelesai = Tiket::where('users_id', $userUuid)
-            ->where('status', 'selesai')
+            ->where('status', 'skt_diterbitkan')
             ->count();
 
-        // 4. Total Tiket Ditolak
         $totalDitolak = Tiket::where('users_id', $userUuid)
-            ->where('status', 'ditolak')
+            ->where('status', 'skt_ditolak')
             ->count();
 
-        // 5. Data Tren Pengajuan Layanan (7 Hari Terakhir)
         $trenData = DB::table('tiket')
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
             ->where('users_id', $userUuid)
@@ -44,14 +36,13 @@ class DashboardControllerMahasiswa extends Controller
             ->orderBy('date', 'ASC')
             ->get();
 
-        // 6. List Tiket Terbaru milik pengguna
         $recentTickets = Tiket::with(['layanan'])
             ->where('users_id', $userUuid)
             ->latest()
             ->take(5)
             ->get();
 
-        return view('pages.mahasiswa.dashboard', compact(
+        return view('pemohon.dashboard', compact(
             'totalDiajukan', 
             'totalDiproses', 
             'totalSelesai', 
