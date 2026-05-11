@@ -11,50 +11,51 @@ use Illuminate\Support\Facades\Vite;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-
-        // Set CSP Nonce untuk Vite agar bisa digunakan di Blade templates
         Vite::useCspNonce(request()->attributes->get('csp_nonce'));
 
-        // Gate untuk Middleware 'can:super-admin-only'
         Gate::define('super-admin-only', function (User $user) {
             return $user->role === 'super_admin';
         });
 
-        // Gate untuk Middleware 'can:mahasiswa-only
-        Gate::define('mahasiswa-only', function (User $user) {
-            return $user->role === 'mahasiswa';
+        Gate::define('pemohon', function (User $user) {
+            return $user->role === 'pemohon';
         });
 
-        // Gate untuk Middleware 'can:operator-only'
-        Gate::define('operator-only', function (User $user) {
-            return $user->role === 'operator';
+        Gate::define('petugas_verifikasi_data', function (User $user) {
+            return $user->role === 'petugas_verifikasi_data';
         });
 
-        // Gate untuk Middleware 'can:kabid-only'
-        Gate::define('kabid-only', function (User $user) {
-            return $user->role === 'kabid';
+        Gate::define('petugas_verifikasi_lapangan', function (User $user) {
+            return $user->role === 'petugas_verifikasi_lapangan';
         });
 
-        // View Composer hanya berjalan saat view 'partials.dashboard.sidebar' dipanggil
+        Gate::define('analis_kebijakan_ahli_muda', function (User $user) {
+            return $user->role === 'analis_kebijakan_ahli_muda';
+        });
+
+        Gate::define('kabid_kesbak', function (User $user) {
+            return $user->role === 'kabid_kesbak';
+        });
+
+        Gate::define('sekban', function (User $user) {
+            return $user->role === 'sekban';
+        });
+
+        Gate::define('kaban', function (User $user) {
+            return $user->role === 'kaban';
+        });
+
         View::composer('partials.dashboard.sidebar', function ($view) {
-
-            // Mengambil file JSON
             $path = resource_path('json/menu.json');
             $menuData = json_decode(file_get_contents($path), true);
 
-            // Gunakan Auth::user() yang lebih eksplisit
             $user = Auth::user();
             $userRole = $user ? $user->role : null;
 
-            // Cari menu yang sesuai dengan role
             $filteredMenu = collect($menuData['menu'])->firstWhere('role', $userRole);
 
-            // Kirim data ke view
             $view->with('verticalMenu', $filteredMenu['items'] ?? []);
         });
     }
