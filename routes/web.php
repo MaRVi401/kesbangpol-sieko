@@ -12,12 +12,9 @@ use App\Http\Controllers\Admin\SiemController;
 use App\Http\Controllers\Kabid\PersetujuanKabidController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\FileController;
-// use App\Http\Controllers\Mahasiswa\ServiceSubDomainController;
-// use App\Http\Controllers\Mahasiswa\ServiceAppsCreationController;
-// use App\Http\Controllers\Mahasiswa\ServiceComplaintSystemController;
 use App\Http\Controllers\Mahasiswa\DetailSuratIzinPermohonan;
 use App\Http\Controllers\Mahasiswa\ServiceHistoryTicketController;
-// use App\Http\Controllers\Mahasiswa\ServiceEmailGovController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -84,25 +81,25 @@ Route::middleware('auth')->group(function () {
 
         // Edit profile
 
-// Route untuk halaman profil
-Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    // Route untuk halaman profil
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
-/**
- * Route khusus untuk menampilkan avatar dari storage private
- * Menggunakan parameter {filename} untuk mencari file di storage/app/avatars/
- */
-Route::get('/user/avatar/{filename}', function ($filename) {
-    $path = 'avatars/' . $filename;
+    /**
+     * Route khusus untuk menampilkan avatar dari storage private
+     * Menggunakan parameter {filename} untuk mencari file di storage/app/avatars/
+     */
+    Route::get('/user/avatar/{filename}', function ($filename) {
+        $path = 'avatars/' . $filename;
 
-    // Pastikan file ada di storage/app/avatars
-    if (!Storage::disk('local')->exists($path)) {
-        abort(404);
-    }
+        // Pastikan file ada di storage/app/avatars
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404);
+        }
 
-    // Mengembalikan file sebagai response gambar
-    return Storage::disk('local')->response($path);
-})->name('avatar.display')->middleware('auth');
+        // Mengembalikan file sebagai response gambar
+        return Storage::disk('local')->response($path);
+    })->name('avatar.display')->middleware('auth');
 
     // Proses Logout
     Route::post('/logout', [LoginController::class, 'logout'])
@@ -115,103 +112,42 @@ Route::get('/user/avatar/{filename}', function ($filename) {
     */
     Route::middleware('can:super-admin-only')->group(function () {
 
-        Route::get('user-management/pending-mahasiswa', [UserManagementController::class, 'pendingMahasiswa'])
-            ->name('user-management.pending');
-        Route::post('user-management/activate/{uuid}', [UserManagementController::class, 'activate'])
-            ->name('user-management.activate');
-        //User management
-        Route::resource('user-management', UserManagementController::class)
-            ->names('user-management')
-            ->parameters(['user-management' => 'user']);
-
-        Route::prefix('super-admin/siem')->name('siem.')->controller(SiemController::class)->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/security-logs', 'securityLogs')->name('security-logs');
-            Route::get('/audit-trails', 'auditTrails')->name('audit-trails');
-        });
-
     });
 
-    /*
-    |----------------------------------------------------------------------
-    | Khusus Operator
-    |----------------------------------------------------------------------
-    */
-    Route::middleware('can:operator-only')->group(function () {
-
-        // Halaman Meja Kerja
-        Route::get('workdesk', [OperatorTicketController::class, 'workDesk'])->name('ticket.workdesk');
-
-        // Proses Ambil Tiket
-        Route::post('ticket/{uuid}/handle', [OperatorTicketController::class, 'handle'])->name('ticket.handle');
-
-        Route::get('/ticket/{uuid}/preview-pdf', [OperatorTicketController::class, 'previewPdf'])->name('ticket.preview-pdf');
-        Route::get('/ticket/{uuid}/download-docx', [OperatorTicketController::class, 'downloadDocx'])->name('ticket.download-docx');
-
-        // Proses Selesaikan Tiket
-        Route::resource('ticket', OperatorTicketController::class)
-            ->parameters(['ticket' => 'uuid'])
-            ->only(['index', 'show', 'update', 'destroy']);
-
-        Route::get('riwayat-tiket', [OperatorTicketController::class, 'history'])->name('ticket.history');
+    // 2. Pemohon
+    Route::middleware('can:pemohon')->prefix('pemohon')->name('pemohon.')->group(function () {
+        
+        
     });
 
-    /*
-    |----------------------------------------------------------------------
-    | Khusus mahasiswa
-    |----------------------------------------------------------------------
-    */
-
-    Route::middleware('can:mahasiswa-only')->group(function () {
-
-        Route::resource('services', ServiceController::class);
-
-        // // RUTE UNTUK DOWNLOAD Email Gov
-        // Route::get('services/email-gov/download/{uuid}', [ServiceEmailGovController::class, 'download'])
-        //     ->name('email.download');
-
-        // // Rute baru untuk Email E-Gov
-        // Route::resource('services-email-e-gov', ServiceEmailGovController::class);
-
-        // //Rute baru untuk Sub Domain
-        // Route::resource('service-sub-domain', ServiceSubDomainController::class);
-
-        // //RUTE DOWNLOAD SUBDOMAIN
-        // Route::get('services/subdomain/download/{uuid}', [ServiceSubDomainController::class, 'download'])
-        //     ->name('subdomain.download');
-
-        // //Rute baru untuk Pembuatan Apps
-        // Route::get('/service-app-creation/download/{uuid}', [ServiceAppsCreationController::class, 'download'])->name('appscreation.download');
-        // Route::resource('service-app-creation', ServiceAppsCreationController::class);
-
-        // //Rute untuk pengaduan
-        // Route::resource('service-complaint-system', ServiceComplaintSystemController::class);
-        Route::resource('detail', DetailSuratIzinPermohonan::class);
-        //Rute History Tiket
-        Route::resource('history', ServiceHistoryTicketController::class);
-        Route::post('services/autosave', [ServiceController::class, 'autosave'])
-             ->middleware('throttle:30,1') // Maksimal 30 request per menit
-             ->name('izin-penelitian.autosave');
-
-        Route::post('history/{uuid}/revisi', [ServiceHistoryTicketController::class, 'revisi'])
-         ->name('history.revisi');
-
-        // //Rute Scanner Image
-        // Route::view('/ai-scanner', 'pages.mahasiswa.layanan.test-scanner')->name('test.scanner');
+   // 3. Petugas Verifikasi Data
+    Route::middleware('can:petugas_verifikasi_data')->prefix('verifikator-data')->name('verif_data.')->group(function () {
+        
     });
 
-    /*
-    |----------------------------------------------------------------------
-    | Khusus Kabid
-    |----------------------------------------------------------------------
-    */
-    Route::middleware('can:kabid-only')->group(function () {
+    // 4. Petugas Verifikasi LapanRoute::get('/', function () { return 'Ini halaman Kaban'; })->name('index');gan
+    Route::middleware('can:petugas_verifikasi_lapangan')->prefix('verifikator-lapangan')->name('verif_lapangan.')->group(function () {
+        
+    });
 
-        // Rute untuk fitur Usulan Prioritas Tiket
-        Route::post('tiket/{uuid}/proses', [PersetujuanKabidController::class, 'proses'])
-            ->name('kabid.tiket.proses');
+    // 5. Analis Kebijakan Ahli Muda
+    Route::middleware('can:analis_kebijakan_ahli_muda')->prefix('analis')->name('analis.')->group(function () {
+        
+    });
 
-        Route::get('tiket/{uuid}/preview-pdf', [PersetujuanKabidController::class, 'previewPdf'])
-            ->name('kabid.tiket.preview');
+    // 6. Kabid Kesbak
+    Route::middleware('can:kabid_kesbak')->prefix('kabid')->name('kabid.')->group(function () {
+       
+    });
+
+    // 7. Sekban
+    Route::middleware('can:sekban')->prefix('sekban')->name('sekban.')->group(function () {
+        
+    });
+
+
+    // 8. Kaban
+    Route::middleware('can:kaban')->prefix('kaban')->name('kaban.')->group(function () {
+        
     });
 });
