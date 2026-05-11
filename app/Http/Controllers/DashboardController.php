@@ -11,18 +11,16 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         return match ($user->role) {
-            // Dashboard Super Admin
-            'super_admin'  => app(Admin\DashboardController::class)->index(),
-
-            // Dashboard Operator
-            'operator'     => app(Operator\DashboardController::class)->index(request()),
+            'super_admin'                 => app(Admin\DashboardController::class)->index(request()),
+            'pemohon'                     => app(Pemohon\DashboardController::class)->index(request()),
+            'petugas_verifikasi_data'     => app(PetugasVerifikasiData\DashboardController::class)->index(request()),
+            'petugas_verifikasi_lapangan' => app(PetugasVerifikasiLapangan\DashboardController::class)->index(request()),
+            'analis_kebijakan_ahli_muda'  => app(Analis\DashboardController::class)->index(request()),
+            'kabid_kesbak'                => app(Kabid\DashboardController::class)->index(request()),
+            'sekban'                      => app(Sekban\DashboardController::class)->index(request()),
+            'kaban'                       => app(Kaban\DashboardController::class)->index(request()),
             
-            // Dashboard Kabid
-            'kabid'        => app(Kabid\DashboardController::class)->index(request()),
-            
-            'mahasiswa' => app(Mahasiswa\DashboardControllerMahasiswa::class)->index(request()),
-
-            default        => abort(403, 'Role tidak dikenali.'),
+            default => abort(403, 'Role tidak dikenali.'),
         };
     }
 }

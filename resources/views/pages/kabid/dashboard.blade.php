@@ -58,7 +58,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="p-5 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm dark:bg-blue-900/10 dark:border-blue-900/20">
                 <div class="flex items-center justify-between mb-2">
-                    <p class="text-xs font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">Perlu Diproses</p>
+                    <p class="text-xs font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">Menunggu TTD</p>
                     <i class="ti ti-clock text-blue-500 text-xl"></i>
                 </div>
                 <h5 class="text-3xl font-black text-blue-700 dark:text-blue-100">{{ $totalMenunggu }}</h5>
@@ -66,7 +66,7 @@
 
             <div class="p-5 bg-green-50/50 border border-green-100 rounded-xl shadow-sm dark:bg-green-900/10 dark:border-green-900/20">
                 <div class="flex items-center justify-between mb-2">
-                    <p class="text-xs font-bold uppercase text-green-600 dark:text-green-400 tracking-wider">Tiket Diterima</p>
+                    <p class="text-xs font-bold uppercase text-green-600 dark:text-green-400 tracking-wider">SKT Disetujui</p>
                     <i class="ti ti-check text-green-500 text-xl"></i>
                 </div>
                 <h5 class="text-3xl font-black text-green-700 dark:text-green-100">{{ $totalDiterima }}</h5>
@@ -74,7 +74,7 @@
 
             <div class="p-5 bg-red-50/50 border border-red-100 rounded-xl shadow-sm dark:bg-red-900/10 dark:border-red-900/20">
                 <div class="flex items-center justify-between mb-2">
-                    <p class="text-xs font-bold uppercase text-red-600 dark:text-red-400 tracking-wider">Tiket Ditolak</p>
+                    <p class="text-xs font-bold uppercase text-red-600 dark:text-red-400 tracking-wider">SKT Ditolak</p>
                     <i class="ti ti-x text-red-500 text-xl"></i>
                 </div>
                 <h5 class="text-3xl font-black text-red-700 dark:text-red-100">{{ $totalDitolak }}</h5>
@@ -84,7 +84,7 @@
         <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col mb-8">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 flex justify-between items-center text-heading font-bold italic">
                 <h3 class="flex items-center text-gray-900 dark:text-white">
-                    <i class="ti ti-inbox text-blue-600 me-2 text-xl"></i> Antrean Tiket Verifikasi Lengkap
+                    <i class="ti ti-inbox text-blue-600 me-2 text-xl"></i> Antrean Tiket Menunggu Penandatanganan
                 </h3>
             </div>
 
@@ -115,7 +115,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100 rounded-lg dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                        {{ $tiket->status }}
+                                        {{ str_replace('_', ' ', $tiket->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
@@ -128,16 +128,16 @@
                                         </a>
                                         <form action="{{ route('kabid.tiket.proses', $tiket->uuid) }}" method="POST" class="inline">
                                             @csrf
-                                            <input type="hidden" name="status" value="diterima">
+                                            <input type="hidden" name="status" value="skt_disetujui">
                                             <button type="button" 
                                                     class="btn-terima inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 transition-all shadow-sm font-bold text-xs"
-                                                    title="Terima Tiket">
-                                                <i class="ti ti-check mr-1"></i> Terima
+                                                    title="Setujui Tiket">
+                                                <i class="ti ti-check mr-1"></i> Setujui
                                             </button>
                                         </form>
                                         <form action="{{ route('kabid.tiket.proses', $tiket->uuid) }}" method="POST" class="inline">
                                             @csrf
-                                            <input type="hidden" name="status" value="ditolak">
+                                            <input type="hidden" name="status" value="skt_ditolak">
                                             <input type="hidden" name="komentar" class="input-komentar" value="">
                                             <button type="button" 
                                                     data-notiket="{{ $tiket->no_tiket }}"
@@ -152,7 +152,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="px-6 py-10 text-center italic text-gray-400 dark:text-gray-500 bg-white dark:bg-[#1e293b]">
-                                    Belum ada tiket yang berstatus 'Verifikasi Lengkap' untuk diproses.
+                                    Belum ada tiket yang berstatus 'Menunggu Penandatanganan' untuk diproses.
                                 </td>
                             </tr>
                         @endforelse
@@ -198,9 +198,9 @@
                                     {{ $history->layanan->nama ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($history->status == 'diterima')
+                                    @if($history->status == 'skt_disetujui')
                                         <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-green-700 bg-green-100 rounded-lg dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
-                                            DITERIMA
+                                            DISETUJUI
                                         </span>
                                     @else
                                         <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 bg-red-100 rounded-lg dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800">
@@ -251,7 +251,7 @@
 
             <form id="formTolakTiket" method="POST" action="">
                 @csrf
-                <input type="hidden" name="status" value="ditolak">
+                <input type="hidden" name="status" value="skt_ditolak">
                 <div class="mb-5">
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-2 tracking-widest">Alasan Penolakan <span class="text-red-500">*</span></label>
                     <textarea name="komentar" required class="w-full min-h-30 bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-100 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-2xl p-4 focus:ring-0 focus:border-red-500 outline-none resize-none transition-colors" placeholder="Masukkan alasan mengapa tiket ini ditolak..."></textarea>

@@ -6,26 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Models\Tiket;
 use Illuminate\Http\Request;
 
-
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $tiketMenunggu = Tiket::with(['layanan', 'user', 'suratIzinPenelitian'])
-            ->where('status', 'verifikasi lengkap')
+        $tiketMenunggu = Tiket::with(['layanan', 'user', 'permohonanSkt'])
+            ->where('status', 'menunggu_penandatanganan')
             ->latest()
             ->paginate(10, ['*'], 'antrean_page');
 
-        $tiketHistory = Tiket::with(['layanan', 'user', 'suratIzinPenelitian'])
-            ->whereIn('status', ['diterima', 'ditolak'])
+        $tiketHistory = Tiket::with(['layanan', 'user', 'permohonanSkt'])
+            ->whereIn('status', ['skt_disetujui', 'skt_ditolak'])
             ->latest()
             ->paginate(10, ['*'], 'history_page');
 
-        $totalMenunggu = Tiket::where('status', 'verifikasi lengkap')->count();
-        $totalDiterima = Tiket::where('status', 'diterima')->count();
-        $totalDitolak = Tiket::where('status', 'ditolak')->count();
+        $totalMenunggu = Tiket::where('status', 'menunggu_penandatanganan')->count();
+        $totalDiterima = Tiket::where('status', 'skt_disetujui')->count();
+        $totalDitolak = Tiket::where('status', 'skt_ditolak')->count();
 
-        return view('pages.kabid.dashboard', compact(
+        return view('kabid.dashboard', compact(
             'tiketMenunggu',
             'tiketHistory',
             'totalMenunggu',
