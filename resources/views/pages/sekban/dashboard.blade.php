@@ -113,12 +113,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('sekban.tiket.preview', $tiket->uuid) }}" 
+                                        <a href="#" 
                                             target="_blank"
                                             class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
                                                 <i class="ti ti-eye mr-1"></i> Lihat Draft
                                         </a>
-                                        <form action="{{ route('sekban.tiket.proses', $tiket->uuid) }}" method="POST" class="inline">
+                                        <form action="#" method="POST" class="inline">
                                             @csrf
                                             <input type="hidden" name="status" value="skt_disetujui">
                                             <button type="submit" class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
@@ -183,7 +183,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="{{ route('sekban.tiket.preview', $history->uuid) }}" target="_blank" class="text-blue-600 hover:underline font-bold text-xs">Download SKT</a>
+                                    <a href="#" target="_blank" class="text-blue-600 hover:underline font-bold text-xs">Download SKT</a>
                                 </td>
                             </tr>
                         @empty
@@ -211,7 +211,7 @@
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 italic">
                 Tiket: <span id="label_no_tiket" class="font-bold text-gray-900 dark:text-white"></span>
             </p>
-            <form action="{{ route('sekban.tiket.proses', 'dummy') }}" id="formTolakSekban" method="POST">
+            <form action="#" id="formTolakSekban" method="POST">
                 @csrf
                 <input type="hidden" name="status" value="skt_ditolak">
                 <div class="mb-5">

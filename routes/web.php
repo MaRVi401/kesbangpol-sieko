@@ -111,12 +111,25 @@ Route::middleware('auth')->group(function () {
     |----------------------------------------------------------------------
     */
     Route::middleware('can:super-admin-only')->group(function () {
+        Route::resource('user-management', UserManagementController::class)
+            ->names('user-management')
+            ->parameters(['user-management' => 'user']);
 
+        Route::prefix('super-admin/siem')->name('siem.')->controller(SiemController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/security-logs', 'securityLogs')->name('security-logs');
+            Route::get('/audit-trails', 'auditTrails')->name('audit-trails');
+        });
+
+         Route::get('user-management/pending-mahasiswa', [UserManagementController::class, 'pendingMahasiswa'])
+            ->name('user-management.pending');
+        Route::post('user-management/activate/{uuid}', [UserManagementController::class, 'activate'])
+            ->name('user-management.activate');
     });
 
     // 2. Pemohon
     Route::middleware('can:pemohon')->prefix('pemohon')->name('pemohon.')->group(function () {
-        
+        Route::get('/', [App\Http\Controllers\PemohonController::class, 'index'])->name('index');
         
     });
 

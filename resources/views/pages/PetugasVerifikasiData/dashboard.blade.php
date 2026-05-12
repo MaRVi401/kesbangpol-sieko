@@ -62,7 +62,7 @@
                 </div>
                 <h5 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalMasuk }}</h5>
                 <div class="mt-4">
-                    <a href="{{ route('ticket.index') }}"
+                    <a href="#"
                         class="text-xs font-bold text-blue-600 hover:underline dark:text-blue-400 inline-flex items-center">
                         Cek Antrean
                         <svg class="w-3 h-3 ms-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +86,7 @@
                 </div>
                 <h5 class="text-3xl font-bold text-orange-900 dark:text-orange-100">{{ $sedangDitangani }}</h5>
                 <div class="mt-4">
-                    <a href="{{ route('ticket.workdesk') }}"
+                    <a href="#"
                         class="text-xs font-bold text-orange-600 hover:underline dark:text-orange-400 inline-flex items-center">
                         Buka Halaman Kerja
                         <svg class="w-3 h-3 ms-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@
                 </div>
 
                 <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/20 dark:bg-gray-800/50">
-                    <a href="{{ route('ticket.workdesk') }}"
+                    <a href="#"
                         class="flex items-center justify-center text-xs font-bold text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors">
                         LIHAT SEMUA HALAMAN KERJA
                         <svg class="w-4 h-4 ms-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

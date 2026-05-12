@@ -62,7 +62,7 @@
                 </div>
                 <h5 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalDiajukan }}</h5>
                 <div class="mt-4">
-                    <a href="{{ route('pemohon.index') }}"
+                    <a href="#"
                         class="text-xs font-bold text-blue-600 hover:underline dark:text-blue-400 inline-flex items-center">
                         Cek Pengajuan
                         <svg class="w-3 h-3 ms-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

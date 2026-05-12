@@ -113,7 +113,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('analis.tiket.kerjakan', $tiket->uuid) }}" 
+                                        <a href="#" 
                                             class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
                                                 <i class="ti ti-edit mr-1"></i> Buat Draft SKT
                                         </a>
@@ -178,7 +178,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="{{ route('analis.tiket.detail', $history->uuid) }}" class="text-blue-600 hover:underline font-bold text-xs">Lihat Detail</a>
+                                    <a href="#" class="text-blue-600 hover:underline font-bold text-xs">Lihat Detail</a>
                                 </td>
                             </tr>
                         @empty

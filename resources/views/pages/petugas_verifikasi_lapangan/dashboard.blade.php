@@ -91,7 +91,7 @@
                                     {{ $tiket->permohonanSkt->alamat_sekretariat ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="{{ route('petugas_lapangan.tiket.verifikasi', $tiket->uuid) }}" 
+                                    <a href="#" 
                                         class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
                                             <i class="ti ti-map-2 mr-1"></i> Mulai Verifikasi
                                     </a>
@@ -139,7 +139,7 @@
                                     {{ $history->permohonanSkt->nama_organisasi ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="{{ route('petugas_lapangan.tiket.detail', $history->uuid) }}" class="text-blue-600 hover:underline font-bold text-xs">Lihat Berita Acara</a>
+                                    <a href="#" class="text-blue-600 hover:underline font-bold text-xs">Lihat Berita Acara</a>
                                 </td>
                             </tr>
                         @empty

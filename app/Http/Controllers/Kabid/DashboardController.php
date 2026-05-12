@@ -24,7 +24,7 @@ class DashboardController extends Controller
         $totalDiterima = Tiket::where('status', 'skt_disetujui')->count();
         $totalDitolak = Tiket::where('status', 'skt_ditolak')->count();
 
-        return view('kabid.dashboard', compact(
+        return view('pages.kabid.dashboard', compact(
             'tiketMenunggu',
             'tiketHistory',
             'totalMenunggu',
