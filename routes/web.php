@@ -130,6 +130,9 @@ Route::middleware('auth')->group(function () {
     // 2. Pemohon
     Route::middleware('can:pemohon')->prefix('pemohon')->name('pemohon.')->group(function () {
         Route::get('/', [App\Http\Controllers\PemohonController::class, 'index'])->name('index');
+
+        Route::get('/services', [App\Http\Controllers\Pemohon\ServiceController::class, 'index'])->name('services.index');
+        Route::get('/history', [App\Http\Controllers\Pemohon\ServiceHistoryTicketController::class, 'index'])->name('history.index');
         
     });
 

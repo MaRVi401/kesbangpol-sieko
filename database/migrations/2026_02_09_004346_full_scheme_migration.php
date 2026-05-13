@@ -160,6 +160,98 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('formulir_permohonan_baru_pencatatan_ormas', function (Blueprint $table) {
+            $table->uuid('uuid')->primary();
+            $table->foreignUuid('tiket_id')->constrained('tiket', 'uuid')->cascadeOnDelete();
+            $table->string('nomor')->nullable();
+            $table->string('perihal')->nullable();
+            $table->string('nama_pemohon');
+            $table->string('tempat_lahir');
+            $table->date('tanggal_lahir');
+            $table->string('jabatan_pemohon');
+            $table->text('alamat_rumah');
+            $table->string('nomor_ktp', 16);
+            $table->string('nama_organisasi');
+            $table->string('nomor_npwp_organisasi')->nullable();
+            $table->string('sifat_kekhususan');
+            $table->string('nomor_akte_pendirian');
+            $table->text('alamat_organisasi');
+            $table->text('alamat_sekretariat');
+            $table->string('nama_ketua');
+            $table->string('nama_sekretaris');
+            $table->string('nama_bendahara');
+            $table->integer('jumlah_anggota')->default(0);
+            $table->integer('jumlah_cabang')->default(0);
+            $table->date('tanggal_permohonan')->nullable();
+            $table->string('file_kop_surat')->nullable();
+            $table->string('file_tanda_tangan_pemohon')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('biodata_pengurus_ormas', function (Blueprint $table) {
+            $table->uuid('uuid')->primary();
+            $table->foreignUuid('formulir_id')->constrained('formulir_permohonan_baru_pencatatan_ormas', 'uuid')->cascadeOnDelete();
+            $table->string('nama_lengkap'); 
+            $table->string('tempat_lahir');
+            $table->date('tanggal_lahir');
+            $table->enum('jenis_kelamin', ['Pria', 'Wanita']);
+            $table->enum('status_perkawinan', ['Kawin', 'Belum Kawin', 'Janda', 'Duda']);
+            $table->string('agama');
+            $table->string('utusan_organisasi')->nullable();
+            $table->string('jabatan'); 
+            $table->text('alamat_organisasi')->nullable();
+            $table->string('telepon_organisasi')->nullable();
+            $table->text('alamat_rumah');
+            $table->string('telepon_rumah_hp');
+            $table->string('pendidikan_terakhir');
+            $table->json('riwayat_organisasi')->nullable();
+            $table->string('hobi')->nullable();
+            $table->string('foto_resmi');
+            $table->string('file_tanda_tangan')->nullable();
+            $table->date('tanggal_pengisian')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('surat_pernyataan_ormas', function (Blueprint $table) {
+            $table->uuid('uuid')->primary();
+            $table->foreignUuid('formulir_id')->constrained('formulir_permohonan_baru_pencatatan_ormas', 'uuid')->cascadeOnDelete();
+            $table->string('nama_ketua');
+            $table->string('nomor_ktp_ketua', 16);
+            $table->string('nama_sekretaris');
+            $table->string('nomor_ktp_sekretaris', 16);
+            $table->date('tanggal_surat_pernyataan')->nullable();
+            $table->string('file_ttd_ketua_materai')->nullable();
+            $table->string('file_ttd_sekretaris')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('formulir_isian_ormas', function (Blueprint $table) {
+            $table->uuid('uuid')->primary();
+            $table->foreignUuid('formulir_id')->constrained('formulir_permohonan_baru_pencatatan_ormas', 'uuid')->cascadeOnDelete();
+            $table->string('nama_organisasi');
+            $table->string('bidang_kegiatan');
+            $table->string('ruang_lingkup');
+            $table->text('alamat_sekretariat');
+            $table->string('tempat_pendirian');
+            $table->date('tanggal_pendirian');
+            $table->string('asas_ciri_organisasi');
+            $table->text('tujuan_organisasi');
+            $table->text('nama_pendiri');
+            $table->string('nama_pembina')->nullable();
+            $table->string('nama_penasehat')->nullable();
+            $table->string('nama_ketua');
+            $table->string('nama_sekretaris');
+            $table->string('nama_bendahara');
+            $table->string('masa_bhakti_kepengurusan');
+            $table->string('keputusan_tertinggi_organisasi');
+            $table->string('unit_sayap_otonom')->nullable();
+            $table->string('usaha_organisasi')->nullable();
+            $table->string('sumber_keuangan');
+            $table->string('file_logo_organisasi')->nullable();
+            $table->string('file_bendera_organisasi')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('riwayat_status_tiket', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
             $table->foreignUuid('tiket_id')->constrained('tiket', 'uuid')->cascadeOnDelete();
@@ -205,8 +297,12 @@ return new class extends Migration
     {
         Schema::dropIfExists('jejak_audit');
         Schema::dropIfExists('log_keamanan');
-        Schema::dropIfExists('riwayat_status_tiket');
         Schema::dropIfExists('komentar_tiket');
+        Schema::dropIfExists('riwayat_status_tiket');
+        Schema::dropIfExists('formulir_isian_ormas');
+        Schema::dropIfExists('surat_pernyataan_ormas');
+        Schema::dropIfExists('biodata_pengurus_ormas');
+        Schema::dropIfExists('formulir_permohonan_baru_pencatatan_ormas');
         Schema::dropIfExists('permohonan_skt');
         Schema::dropIfExists('draft_skt');
         Schema::dropIfExists('berita_acara_lapangan');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Mahasiswa;
+namespace App\Http\Controllers\Pemohon;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tiket;
@@ -31,7 +31,7 @@ class ServiceHistoryTicketController extends Controller
 
         $tickets = $query->latest('updated_at')->paginate(10);
 
-        return view('pages.mahasiswa.history_ticket.index', compact('tickets'));
+        return view('pages.pemohon.history_ticket.index', compact('tickets'));
     }
 
 
@@ -73,6 +73,6 @@ class ServiceHistoryTicketController extends Controller
         ]);
 
         
-        return redirect()->route('services.index')->with('success', 'Silakan perbarui data pengajuan Anda.');
+        return redirect()->route('pemohon.services.index')->with('success', 'Silakan perbarui data pengajuan Anda.');
     }
 }

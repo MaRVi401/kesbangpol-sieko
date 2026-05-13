@@ -24,6 +24,26 @@
                     "route": "siem.index"
                 }
             ]
+        },
+        {
+            "role": "pemohon",
+            "items": [
+                {
+                    "name": "Dashboard",
+                    "icon": "ti ti-layout-dashboard",
+                    "route": "dashboard"
+                },
+                {
+                    "name": "Form Pengajuan",
+                    "icon": "ti ti-file-download",
+                    "route": "pemohon.services.index"
+                },
+                {
+                    "name": "Riwayat Status Tiket",
+                    "icon": "ti ti-clock",
+                    "route": "pemohon.history.index"
+                }
+            ]
         }
        
     ]

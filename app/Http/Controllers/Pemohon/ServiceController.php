@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Mahasiswa;
+namespace App\Http\Controllers\Pemohon;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -13,9 +13,13 @@ use Intervention\Image\Laravel\Facades\Image;
 
 use App\Models\Tiket;
 use App\Models\Layanan;
-use App\Models\SuratPermohonanIzinPenelitian;
 use App\Models\RiwayatStatusTiket;
 use App\Models\JejakAudit;
+
+use App\Models\FormulirPermohonanOrmas; 
+use App\Models\BiodataPengurusOrmas;
+use App\Models\SuratPernyataanOrmas;
+use App\Models\FormulirIsianOrmas;
 
 class ServiceController extends Controller
 {
@@ -23,108 +27,54 @@ class ServiceController extends Controller
     {
         $userId = Auth::user()->uuid;
         
+        // Ubah pencarian draft ke Layanan Pencatatan Ormas
         $draft = Tiket::where('users_id', $userId)
                       ->where('status', 'draft')
                       ->whereHas('layanan', function($q) {
-                          $q->where('nama', 'LIKE', '%Izin Penelitian%');
+                          $q->where('nama', 'LIKE', '%Pencatatan Ormas%');
                       })
                       ->latest()
                       ->first();
 
         $payloadDraft = [];
         if ($draft && $draft->payload_draft) {
-            // Jika payload_draft masih berupa string JSON (misal karena query raw atau error cast)
             if (is_string($draft->payload_draft)) {
                  $payloadDraft = json_decode($draft->payload_draft, true) ?? [];
             } else {
-                 // Jika sudah array (berkat model casting)
                  $payloadDraft = (array) $draft->payload_draft;
             }
         }
         
         $tiketUuid = $draft ? $draft->uuid : null;
 
-        return view('pages.mahasiswa.surat-izin-penelitian.index', compact('payloadDraft', 'tiketUuid'));
+        return view('pages.pemohon.formulir-pemohon.index', compact('payloadDraft', 'tiketUuid'));
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'tiket_uuid'            => 'nullable|uuid',
-            'nama'                  => 'required|string|max:255',
-            'nama_alias'            => 'nullable|string|max:255',
-            'nama_panggilan'        => 'nullable|string|max:255',
-            'tempat_lahir'          => 'required|string|max:255',
-            'tanggal_lahir'         => 'required|date',
-            'jenis_kelamin'         => 'required|in:Laki-laki,Perempuan',
-            'agama'                 => 'required|string|max:255',
-            'kebangsaan'            => 'nullable|string|max:255',
-            'status_perkawinan'     => 'required|in:Kawin,Belum Kawin',
-            'no_hp'                 => 'required|digits_between:10,15',
-            'alamat_lengkap'        => 'required|string',
-            'pas_foto'              => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'nomor_mahasiswa'       => 'nullable|alpha_num|max:50',
-            'nomor_pegawai'         => 'nullable|digits:18',
-            'pekerjaan'             => 'nullable|string|max:255',
-            'pekerjaan_pendidikan'  => 'required|string|max:255',
-            'institusi_pendidikan'  => 'required|string|max:255',
-            'semester'              => 'nullable|integer|min:1|max:14',
-            'alamat_institusi'      => 'nullable|string',
-            'alamat_kantor'         => 'nullable|string',
-            'kegiatan'              => 'required|string|max:255',
-            'dalam_rangka'          => 'required|string|max:255',
-            'judul_pembicara'       => 'required|string|max:255',
-            'lokasi_kegiatan'       => 'required|string|max:255',
-            'tanggal_mulai'         => 'required|date',
-            'tanggal_selesai'       => 'required|date|after_or_equal:tanggal_mulai',
-            'penanggung_jawab_1'    => 'required|string|max:255',
-            'penanggung_jawab_2'    => 'nullable|string|max:255',
-            'banyak_peserta'        => 'required|integer|min:1',
-            'tinggi_badan'          => 'nullable|integer|min:50|max:250',
-            'bentuk_badan'          => 'nullable|string|max:255',
-            'warna_kulit'           => 'nullable|string|max:255',
-            'bentuk_rambut'         => 'nullable|string|max:255',
-            'bentuk_hidung'         => 'nullable|string|max:255',
-            'ciri_khusus'           => 'nullable|string|max:255',
-            'hobi'                  => 'nullable|string|max:255',
-        ], [
-            'no_hp.digits_between'  => 'Kolom No. HP/WhatsApp harus antara 10 hingga 15 digit.',
-            'pas_foto.image'        => 'File pas foto harus berupa gambar.',
-            'pas_foto.max'          => 'Ukuran pas foto tidak boleh lebih dari 2MB.',
-            'nomor_mahasiswa.alpha_num' => 'Nomor Mahasiswa (NIM) hanya boleh berisi huruf dan angka.',
-            'nomor_pegawai.digits'  => 'Nomor Pegawai (NIP) harus tepat 18 digit.',
-            'semester.integer'      => 'Semester harus berupa angka bulat.',
-            'semester.min'          => 'Semester tidak boleh kurang dari 1.',
-            'semester.max'          => 'Semester tidak boleh lebih dari 14.',
-            'tanggal_selesai.after_or_equal' => 'Tanggal Selesai harus sama atau setelah Tanggal Mulai.',
-            'banyak_peserta.min'    => 'Banyak peserta minimal 1 orang.',
-            'tinggi_badan.min'      => 'Tinggi badan minimal 50 cm.',
-            'tinggi_badan.max'      => 'Tinggi badan maksimal 250 cm.',
-            'required'              => 'Kolom :attribute wajib diisi.'
+        // Validasi data utama (bisa Anda kembangkan lebih detail sesuai kebutuhan)
+        $request->validate([
+            'nama_pemohon'          => 'required|string|max:255',
+            'nomor_ktp'             => 'required|digits:16',
+            'nama_organisasi'       => 'required|string|max:255',
+            'pengurus'              => 'required|array',
+            'surat_pernyataan'      => 'required|array',
+            'formulir_isian'        => 'required|array',
+            'file_kop_surat'        => 'nullable|mimes:pdf,jpeg,png,jpg|max:2048',
+            'file_tanda_tangan_pemohon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
             $userId = Auth::user()->uuid;
-            $file = $request->file('pas_foto');
             
-            $fileHash = hash_file('sha256', $file->path());
-            $fileName = $userId . '_' . $fileHash . '.webp';
-            
-            $image = Image::read($file);
-            $encodedImage = $image->toWebp(80); 
-            
-            Storage::put('private/pas_foto/' . $fileName, (string) $encodedImage);
-
-            $validatedData['path_pas_foto'] = $fileName;
+            // 1. Persiapan Layanan dan Tiket
+            $layanan = Layanan::where('nama', 'LIKE', '%Pencatatan Ormas%')->firstOrFail();
+            $noTiket = 'ORMAS-' . Carbon::now()->format('dmY') . '-' . Str::upper(Str::random(4));
+            $aksiAudit = 'create';
             
             $tiketUuid = $request->input('tiket_uuid');
-            unset($validatedData['pas_foto'], $validatedData['tiket_uuid']);
-            
             $tiket = null;
-            $layanan = Layanan::where('nama', 'LIKE', '%Izin Penelitian%')->firstOrFail();
-            $noTiket = 'PEN-' . Carbon::now()->format('dmY') . '-' . Str::upper(Str::random(4));
-            $aksiAudit = 'create';
 
             if ($tiketUuid) {
                 $tiket = Tiket::where('uuid', $tiketUuid)
@@ -137,7 +87,7 @@ class ServiceController extends Controller
                 $tiket->update([
                     'no_tiket' => $noTiket,
                     'status' => 'diajukan',
-                    'deskripsi' => 'Permohonan Izin Penelitian: ' . $request->judul_pembicara,
+                    'deskripsi' => 'Permohonan Pencatatan Ormas: ' . $request->nama_organisasi,
                     'payload_draft' => null
                 ]);
                 $aksiAudit = 'update';
@@ -148,23 +98,117 @@ class ServiceController extends Controller
                     'layanan_id' => $layanan->uuid,
                     'no_tiket'   => $noTiket,
                     'status'     => 'diajukan',
-                    'deskripsi'  => 'Permohonan Izin Penelitian: ' . $request->judul_pembicara,
+                    'deskripsi'  => 'Permohonan Pencatatan Ormas: ' . $request->nama_organisasi,
                     'payload_draft' => null
                 ]);
             }
-        
-            $validatedData['uuid'] = (string) Str::uuid();
-            $validatedData['tiket_id'] = $tiket->uuid;
-            $validatedData['kebangsaan'] = $request->input('kebangsaan', 'Indonesia');
-            
-            SuratPermohonanIzinPenelitian::create($validatedData);
-            
+
+            // 2. Simpan Data Utama (formulir_permohonan_baru_pencatatan_ormas)
+            $formulirUuid = (string) Str::uuid();
+            FormulirPermohonanOrmas::create([
+                'uuid'                      => $formulirUuid,
+                'tiket_id'                  => $tiket->uuid,
+                'nomor'                     => $request->nomor,
+                'perihal'                   => $request->perihal,
+                'nama_pemohon'              => $request->nama_pemohon,
+                'tempat_lahir'              => $request->tempat_lahir,
+                'tanggal_lahir'             => $request->tanggal_lahir,
+                'jabatan_pemohon'           => $request->jabatan_pemohon,
+                'alamat_rumah'              => $request->alamat_rumah,
+                'nomor_ktp'                 => $request->nomor_ktp,
+                'nama_organisasi'           => $request->nama_organisasi,
+                'nomor_npwp_organisasi'     => $request->nomor_npwp_organisasi,
+                'sifat_kekhususan'          => $request->sifat_kekhususan,
+                'nomor_akte_pendirian'      => $request->nomor_akte_pendirian,
+                'alamat_organisasi'         => $request->alamat_organisasi,
+                'alamat_sekretariat'        => $request->alamat_sekretariat,
+                'nama_ketua'                => $request->nama_ketua,
+                'nama_sekretaris'           => $request->nama_sekretaris,
+                'nama_bendahara'            => $request->nama_bendahara,
+                'jumlah_anggota'            => $request->jumlah_anggota ?? 0,
+                'jumlah_cabang'             => $request->jumlah_cabang ?? 0,
+                'tanggal_permohonan'        => $request->tanggal_permohonan,
+                'file_kop_surat'            => $this->handleFileUpload($request->file('file_kop_surat'), $userId, 'private/ormas/kop_surat'),
+                'file_tanda_tangan_pemohon' => $this->handleFileUpload($request->file('file_tanda_tangan_pemohon'), $userId, 'private/ormas/ttd'),
+            ]);
+
+            // 3. Simpan Biodata Pengurus (Loop array ketua, sekretaris, bendahara)
+            if ($request->has('pengurus')) {
+                foreach ($request->pengurus as $key => $pengurusData) {
+                    BiodataPengurusOrmas::create([
+                        'uuid'                  => (string) Str::uuid(),
+                        'formulir_id'           => $formulirUuid,
+                        'nama_lengkap'          => $pengurusData['nama_lengkap'],
+                        'tempat_lahir'          => $pengurusData['tempat_lahir'],
+                        'tanggal_lahir'         => $pengurusData['tanggal_lahir'],
+                        'jenis_kelamin'         => $pengurusData['jenis_kelamin'],
+                        'status_perkawinan'     => $pengurusData['status_perkawinan'],
+                        'agama'                 => $pengurusData['agama'],
+                        'utusan_organisasi'     => $pengurusData['utusan_organisasi'] ?? null,
+                        'jabatan'               => $pengurusData['jabatan'],
+                        'alamat_organisasi'     => $pengurusData['alamat_organisasi'] ?? null,
+                        'telepon_organisasi'    => $pengurusData['telepon_organisasi'] ?? null,
+                        'alamat_rumah'          => $pengurusData['alamat_rumah'],
+                        'telepon_rumah_hp'      => $pengurusData['telepon_rumah_hp'],
+                        'pendidikan_terakhir'   => $pengurusData['pendidikan_terakhir'],
+                        'riwayat_organisasi'    => json_encode($pengurusData['riwayat_organisasi'] ?? []),
+                        'hobi'                  => $pengurusData['hobi'] ?? null,
+                        'tanggal_pengisian'     => $pengurusData['tanggal_pengisian'] ?? null,
+                        'foto_resmi'            => $this->handleFileUpload($request->file("pengurus.{$key}.foto_resmi"), $userId, 'private/ormas/foto_pengurus'),
+                        'file_tanda_tangan'     => $this->handleFileUpload($request->file("pengurus.{$key}.file_tanda_tangan"), $userId, 'private/ormas/ttd_pengurus'),
+                    ]);
+                }
+            }
+
+            // 4. Simpan Surat Pernyataan
+            $pernyataan = $request->surat_pernyataan;
+            SuratPernyataanOrmas::create([
+                'uuid'                       => (string) Str::uuid(),
+                'formulir_id'                => $formulirUuid,
+                'nama_ketua'                 => $pernyataan['nama_ketua'],
+                'nomor_ktp_ketua'            => $pernyataan['nomor_ktp_ketua'],
+                'nama_sekretaris'            => $pernyataan['nama_sekretaris'],
+                'nomor_ktp_sekretaris'       => $pernyataan['nomor_ktp_sekretaris'],
+                'tanggal_surat_pernyataan'   => $pernyataan['tanggal_surat_pernyataan'] ?? null,
+                'file_ttd_ketua_materai'     => $this->handleFileUpload($request->file('surat_pernyataan.file_ttd_ketua_materai'), $userId, 'private/ormas/pernyataan'),
+                'file_ttd_sekretaris'        => $this->handleFileUpload($request->file('surat_pernyataan.file_ttd_sekretaris'), $userId, 'private/ormas/pernyataan'),
+            ]);
+
+            // 5. Simpan Formulir Isian
+            $isian = $request->formulir_isian;
+            FormulirIsianOrmas::create([
+                'uuid'                           => (string) Str::uuid(),
+                'formulir_id'                    => $formulirUuid,
+                'nama_organisasi'                => $isian['nama_organisasi'],
+                'bidang_kegiatan'                => $isian['bidang_kegiatan'],
+                'ruang_lingkup'                  => $isian['ruang_lingkup'],
+                'alamat_sekretariat'             => $isian['alamat_sekretariat'],
+                'tempat_pendirian'               => $isian['tempat_pendirian'],
+                'tanggal_pendirian'              => $isian['tanggal_pendirian'],
+                'asas_ciri_organisasi'           => $isian['asas_ciri_organisasi'],
+                'tujuan_organisasi'              => $isian['tujuan_organisasi'],
+                'nama_pendiri'                   => $isian['nama_pendiri'],
+                'nama_pembina'                   => $isian['nama_pembina'] ?? null,
+                'nama_penasehat'                 => $isian['nama_penasehat'] ?? null,
+                'nama_ketua'                     => $isian['nama_ketua'],
+                'nama_sekretaris'                => $isian['nama_sekretaris'],
+                'nama_bendahara'                 => $isian['nama_bendahara'],
+                'masa_bhakti_kepengurusan'       => $isian['masa_bhakti_kepengurusan'],
+                'keputusan_tertinggi_organisasi' => $isian['keputusan_tertinggi_organisasi'],
+                'unit_sayap_otonom'              => $isian['unit_sayap_otonom'] ?? null,
+                'usaha_organisasi'               => $isian['usaha_organisasi'] ?? null,
+                'sumber_keuangan'                => $isian['sumber_keuangan'],
+                'file_logo_organisasi'           => $this->handleFileUpload($request->file('formulir_isian.file_logo_organisasi'), $userId, 'private/ormas/logo'),
+                'file_bendera_organisasi'        => $this->handleFileUpload($request->file('formulir_isian.file_bendera_organisasi'), $userId, 'private/ormas/bendera'),
+            ]);
+
+            // 6. Catat Riwayat dan Jejak Audit
             RiwayatStatusTiket::create([
                 'uuid'      => (string) Str::uuid(), 
                 'tiket_id'  => $tiket->uuid,
                 'users_id'  => $userId, 
                 'status'    => 'diajukan',
-                'catatan'   => 'Permohonan Izin Penelitian berhasil diajukan oleh Mahasiswa'
+                'catatan'   => 'Permohonan Pencatatan Ormas berhasil diajukan.'
             ]);
             
             JejakAudit::create([
@@ -195,11 +239,8 @@ class ServiceController extends Controller
         }
     }
 
-
-
     public function autosave(Request $request)
     {
-        // Hanya validasi field yang diperlukan untuk identifier
         $request->validate([
             'tiket_uuid' => 'nullable|uuid',
         ]);
@@ -207,14 +248,19 @@ class ServiceController extends Controller
         DB::beginTransaction();
         try {
             $userId = Auth::user()->uuid;
-            $layanan = Layanan::where('nama', 'LIKE', '%Izin Penelitian%')->firstOrFail();
+            $layanan = Layanan::where('nama', 'LIKE', '%Pencatatan Ormas%')->firstOrFail();
             
-            // Ambil semua input form, KECUALI file foto dan token untuk disimpan sbg JSON
-            $payload = $request->except(['_token', 'pas_foto', 'tiket_uuid']);
+            // Ambil semua payload (termasuk array multi-dimensi dari blade), kecualikan file
+            $payload = $request->except(['_token', 'tiket_uuid']);
             
-            $tiket = null;
+            // Bersihkan data file/gambar dari payload agar JSON bersih
+            foreach ($payload as $key => $value) {
+                if ($request->hasFile($key)) {
+                    unset($payload[$key]);
+                }
+            }
 
-            // Cek apakah sudah ada tiket draft milik user ini (Mencegah IDOR)
+            $tiket = null;
             if ($request->filled('tiket_uuid')) {
                 $tiket = Tiket::where('uuid', $request->tiket_uuid)
                             ->where('users_id', $userId)
@@ -223,7 +269,6 @@ class ServiceController extends Controller
             }
 
             if (!$tiket) {
-                // CREATE Tiket Draft Baru
                 $noTiket = 'DRAFT-' . Carbon::now()->format('dmY') . '-' . Str::upper(Str::random(4));
                 
                 $tiket = Tiket::create([
@@ -232,8 +277,8 @@ class ServiceController extends Controller
                     'layanan_id'    => $layanan->uuid,
                     'no_tiket'      => $noTiket,
                     'status'        => 'draft',
-                    'deskripsi'     => 'Draft Izin Penelitian',
-                    'payload_draft' => $payload // Simpan semua isian ke sini
+                    'deskripsi'     => 'Draft Pencatatan Ormas',
+                    'payload_draft' => json_encode($payload)
                 ]);
 
                 RiwayatStatusTiket::create([
@@ -244,9 +289,8 @@ class ServiceController extends Controller
                     'catatan'   => 'Sistem menyimpan draft otomatis'
                 ]);
             } else {
-                // UPDATE Tiket Draft yang sudah ada
                 $tiket->update([
-                    'payload_draft' => $payload // Timpa JSON lama dengan yang baru
+                    'payload_draft' => json_encode($payload)
                 ]);
             }
 
@@ -260,7 +304,33 @@ class ServiceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Gagal autosave'], 500);
+            return response()->json(['status' => 'error', 'message' => 'Gagal autosave: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Helper function untuk handle upload file (Image WebP / PDF)
+     */
+    private function handleFileUpload($file, $userId, $path)
+    {
+        if (!$file) return null;
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        $hash = hash_file('sha256', $file->path());
+
+        // Jika file berupa gambar, ubah ke WebP seperti logic Anda sebelumnya
+        if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+            $fileName = $userId . '_' . $hash . '.webp';
+            $image = Image::read($file);
+            $encodedImage = $image->toWebp(80); 
+            Storage::put($path . '/' . $fileName, (string) $encodedImage);
+            return $fileName;
+        } 
+        
+        // Jika file PDF atau format lain yang diizinkan, upload langsung
+        $fileName = $userId . '_' . $hash . '.' . $extension;
+        Storage::putFileAs($path, $file, $fileName);
+        
+        return $fileName;
     }
 }

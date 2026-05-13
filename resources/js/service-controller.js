@@ -1,5 +1,6 @@
-const IzinPenelitianFormHandler = () => {
-    const form = document.getElementById('form-penelitian');
+const PencatatanOrmasFormHandler = () => {
+    // Sesuaikan ID form dengan yang ada di blade (form-pencatatan-ormas)
+    const form = document.getElementById('form-pencatatan-ormas');
     if (!form) return;
 
     const saveStatusElement = document.getElementById('save-status');
@@ -40,7 +41,8 @@ const IzinPenelitianFormHandler = () => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
-                    text: `Permohonan Izin Penelitian dengan nomor tiket ${result.no_tiket || ''} berhasil diajukan.`,
+                    // Sesuaikan teks notifikasi sukses
+                    text: `Permohonan Pencatatan Ormas dengan nomor tiket ${result.no_tiket || ''} berhasil diajukan.`,
                     confirmButtonText: 'Ke Riwayat Tiket',
                     confirmButtonColor: '#3085d6',
                     allowOutsideClick: false
@@ -134,4 +136,5 @@ const IzinPenelitianFormHandler = () => {
     });
 };
 
-document.addEventListener('DOMContentLoaded', IzinPenelitianFormHandler);
+// Sesuaikan nama fungsi yang dipanggil saat DOM dimuat
+document.addEventListener('DOMContentLoaded', PencatatanOrmasFormHandler);

@@ -74,4 +74,9 @@ class Tiket extends Model
     {
         return $this->hasMany(KomentarTiket::class, 'tiket_id', 'uuid');
     }
+
+    public function formulirPermohonanBaruOrmas(): HasOne
+    {
+        return $this->hasOne(FormulirPermohonanBaruPencatatanOrmas::class, 'tiket_id', 'uuid');
+    }
 }
