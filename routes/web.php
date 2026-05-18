@@ -1,10 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Mahasiswa\ServiceController;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DevTemplateController;
 use App\Http\Controllers\Operator\TicketController as OperatorTicketController;
@@ -12,8 +13,10 @@ use App\Http\Controllers\Admin\SiemController;
 use App\Http\Controllers\Kabid\PersetujuanKabidController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\FileController;
-use App\Http\Controllers\Mahasiswa\DetailSuratIzinPermohonan;
-use App\Http\Controllers\Mahasiswa\ServiceHistoryTicketController;
+
+use App\Http\Controllers\Pemohon\DashboardController as PemohonDashboardController;
+use App\Http\Controllers\Pemohon\ServiceController;
+use App\Http\Controllers\Pemohon\ServiceHistoryTicketController;
 
 
 /*
@@ -129,10 +132,11 @@ Route::middleware('auth')->group(function () {
 
     // 2. Pemohon
     Route::middleware('can:pemohon')->prefix('pemohon')->name('pemohon.')->group(function () {
-        Route::get('/', [App\Http\Controllers\PemohonController::class, 'index'])->name('index');
+        Route::get('/', [PemohonDashboardController::class, 'index'])->name('index');
 
-        Route::get('/services', [App\Http\Controllers\Pemohon\ServiceController::class, 'index'])->name('services.index');
-        Route::get('/history', [App\Http\Controllers\Pemohon\ServiceHistoryTicketController::class, 'index'])->name('history.index');
+        Route::resource('services', ServiceController::class)->only(['index', 'store']);
+        Route::post('services/autosave', [ServiceController::class, 'autosave'])->name('services.autosave');
+        Route::get('/history', [ServiceHistoryTicketController::class, 'index'])->name('history.index');
         
     });
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\PetugasVerifikasiData;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tiket;

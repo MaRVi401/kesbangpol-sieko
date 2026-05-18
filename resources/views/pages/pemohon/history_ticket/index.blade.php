@@ -35,7 +35,7 @@
 
         <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 mb-6">
             <div class="w-full md:w-1/2">
-                <form action="{{ route('detail.index') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full">
+                <form action="#" method="GET" class="flex flex-col md:flex-row gap-3 w-full">
                     <div class="relative w-full">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewbox="0 0 20 20">
@@ -48,7 +48,7 @@
                             placeholder="Cari tiket...">
 
                         @if (request('search'))
-                            <a href="{{ route('detail.index') }}"
+                            <a href="#"
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-red-500 transition-colors"
                                 title="Bersihkan Pencarian">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('detail.show', $ticket->uuid) }}"
+                                        <a href="#"
                                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800 transition-all shadow-sm"
                                             title="Lihat Detail Tiket">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@
                                         </a>
 
                                         @if(in_array(strtolower($ticket->status), ['ditolak', 'verifikasi gagal']))
-                                            <form action="{{ route('history.revisi', $ticket->uuid) }}" method="POST" class="inline-block">
+                                            <form action="#" method="POST" class="inline-block">
                                                 @csrf
                                                 <button type="submit" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800 transition-all shadow-sm" title="Revisi Tiket">
                                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +141,7 @@
                                             </form>
                                         @endif
 
-                                        <form action="{{ route('detail.destroy', $ticket->uuid) }}" method="POST" class="inline-block">
+                                        <form action="#" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900 transition-all shadow-sm btn-delete" title="Hapus Tiket">
@@ -162,7 +162,7 @@
                                             {{ request('search') ? 'Tiket tidak ditemukan.' : 'Belum ada tiket yang terdaftar.' }}
                                         </p>
                                         @if(request('search'))
-                                            <a href="{{ route('detail.index') }}" class="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline">Tampilkan semua tiket</a>
+                                            <a href="#" class="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline">Tampilkan semua tiket</a>
                                         @endif
                                     </div>
                                 </td>

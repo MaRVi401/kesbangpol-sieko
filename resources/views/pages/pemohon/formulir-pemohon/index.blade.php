@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
     <div id="step-1" class="step-content transition-opacity duration-300">
-        <form id="form-pencatatan-ormas" action="#" data-autosave-url="#" method="POST" enctype="multipart/form-data">
+        <form id="form-pencatatan-ormas" action="{{ route('pemohon.services.store') }}" data-autosave-url="{{ route('pemohon.services.autosave') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <input type="hidden" name="tiket_uuid" id="tiket_uuid" value="{{ $tiketUuid ?? '' }}">
