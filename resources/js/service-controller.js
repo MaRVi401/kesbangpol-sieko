@@ -116,7 +116,8 @@ const PencatatanOrmasFormHandler = () => {
                         allowOutsideClick: false
                     }).then((sweetResult) => {
                         if (sweetResult.isConfirmed) {
-                            window.location.href = '/history';
+                            const historyUrl = form.getAttribute('data-history-url') || '/history';
+                            window.location.href = historyUrl;
                         }
                     });
                 } else {
