@@ -90,11 +90,22 @@
                         </div>
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Akte Pendirian dari Notaris Nomor</label>
-                            <input type="text" name="nomor_akte_pendirian" value="{{ old('nomor_akte_pendirian', $payloadDraft['nomor_akte_pendirian'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <input type="text" name="nomor_akte_pendirian" value="{{ old('nomor_akte_pendirian', $payloadDraft['nomor_akte_pendirian'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Contoh: 12/NOT/VIII/2023"   required>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor NPWP Organisasi</label>
-                            <input type="text" name="nomor_npwp_organisasi" value="{{ old('nomor_npwp_organisasi', $payloadDraft['nomor_npwp_organisasi'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input 
+                                type="text" 
+                                inputmode="numeric" 
+                                pattern="[0-9]*" 
+                                minlength="15" 
+                                maxlength="16" 
+                                name="nomor_npwp_organisasi" 
+                                value="{{ old('nomor_npwp_organisasi', $payloadDraft['nomor_npwp_organisasi'] ?? '') }}" 
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                                placeholder="Masukkan 15 atau 16 digit angka NPWP tanpa tanda baca"
+                            >
                         </div>
                         <div class="md:col-span-2">
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat Organisasi</label>
@@ -129,11 +140,11 @@
                         </div>
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">4. Jumlah Anggota</label>
-                            <input type="number" name="jumlah_anggota" value="{{ old('jumlah_anggota', $payloadDraft['jumlah_anggota'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="jumlah_anggota" value="{{ old('jumlah_anggota', $payloadDraft['jumlah_anggota'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                         </div>
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Banyaknya Cabang</label>
-                            <input type="number" name="jumlah_cabang" value="{{ old('jumlah_cabang', $payloadDraft['jumlah_cabang'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="jumlah_cabang" value="{{ old('jumlah_cabang', $payloadDraft['jumlah_cabang'] ?? '') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                         </div>
                     </div>
                 </div>
@@ -148,12 +159,12 @@
                     <div class="grid gap-6 md:grid-cols-2">
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload Kop Surat (PDF/JPG/PNG)</label>
-                            <input type="file" name="file_kop_surat" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+                            <input type="file" name="file_kop_surat" accept=".pdf,.jpg,.jpeg,.png,.webp" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pastikan file jelas dan dapat dibaca.</p>
                         </div>
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload Tanda Tangan Pemohon (JPG/PNG)</label>
-                            <input type="file" name="file_tanda_tangan_pemohon" accept=".jpg,.jpeg,.png" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+                            <input type="file" name="file_tanda_tangan_pemohon" accept=".jpg,.jpeg,.png,.webp" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Gunakan format gambar berlatar putih atau transparan.</p>
                         </div>
                     </div>
@@ -233,7 +244,7 @@
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telepon Organisasi</label>
-                                    <input type="text" name="pengurus[{{ $key }}][telepon_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*" name="pengurus[{{ $key }}][telepon_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 </div>
 
                                 <div>
@@ -248,7 +259,7 @@
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telepon Rumah / HP</label>
-                                    <input type="text" name="pengurus[{{ $key }}][telepon_rumah_hp]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*" name="pengurus[{{ $key }}][telepon_rumah_hp]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
 
                                 <div>
@@ -469,6 +480,13 @@
 
                 <div class="flex justify-end items-center pt-6 border-t border-gray-200 dark:border-gray-700">
                     <span id="save-status" class="text-sm text-gray-500 dark:text-gray-400 mr-4 font-medium"></span>
+
+                    <button type="button" id="btn-autofill" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 mr-3 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                        <svg class="w-4 h-4 mr-2 inline-block -mt-1 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+                        </svg>
+                        Isi Dummy Data
+                    </button>
                     
                     <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,6 +499,7 @@
         </form>       
     </div>
 </div>
+
 
 @push('scripts')
     @vite('resources/js/service-controller.js')

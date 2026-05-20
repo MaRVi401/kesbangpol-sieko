@@ -16,7 +16,7 @@ use App\Models\Layanan;
 use App\Models\RiwayatStatusTiket;
 use App\Models\JejakAudit;
 
-use App\Models\FormulirPermohonanOrmas; 
+use App\Models\FormulirPermohonanBaruPencatatanOrmas; 
 use App\Models\BiodataPengurusOrmas;
 use App\Models\SuratPernyataanOrmas;
 use App\Models\FormulirIsianOrmas;
@@ -31,7 +31,7 @@ class ServiceController extends Controller
         $draft = Tiket::where('users_id', $userId)
                       ->where('status', 'draft')
                       ->whereHas('layanan', function($q) {
-                          $q->where('nama', 'LIKE', '%Pencatatan Ormas%');
+                          $q->where('nama', 'LIKE', '%(SKT) Ormas%');
                       })
                       ->latest()
                       ->first();
@@ -52,16 +52,25 @@ class ServiceController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi data utama (bisa Anda kembangkan lebih detail sesuai kebutuhan)
         $request->validate([
-            'nama_pemohon'          => 'required|string|max:255',
-            'nomor_ktp'             => 'required|digits:16',
-            'nama_organisasi'       => 'required|string|max:255',
-            'pengurus'              => 'required|array',
-            'surat_pernyataan'      => 'required|array',
-            'formulir_isian'        => 'required|array',
-            'file_kop_surat'        => 'nullable|mimes:pdf,jpeg,png,jpg|max:2048',
-            'file_tanda_tangan_pemohon' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'nama_pemohon'                            => 'required|string|max:255',
+            'nomor_ktp'                               => 'required|digits:16',
+            'nama_organisasi'                         => 'required|string|max:255',
+            'nomor_akte_pendirian'                    => 'required|string|max:255',
+            'nomor_npwp_organisasi'                   => 'nullable|digits_between:15,16',
+            'pengurus'                                => 'required|array',
+            'surat_pernyataan'                        => 'required|array',
+            'formulir_isian'                          => 'required|array',
+            'file_kop_surat'                          => 'nullable|mimes:pdf,jpeg,png,jpg,webp|max:500',
+            'file_tanda_tangan_pemohon'               => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+            'pengurus.*.foto_resmi'                   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+            'pengurus.*.file_tanda_tangan'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+            'surat_pernyataan.file_ttd_ketua_materai' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+            'surat_pernyataan.file_ttd_sekretaris'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+            'formulir_isian.file_logo_organisasi'     => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+            'formulir_isian.file_bendera_organisasi'  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
+        ], [
+            'max' => 'Ukuran file :attribute tidak boleh lebih dari 500 KB.'
         ]);
 
         DB::beginTransaction();
@@ -69,7 +78,7 @@ class ServiceController extends Controller
             $userId = Auth::user()->uuid;
             
             // 1. Persiapan Layanan dan Tiket
-            $layanan = Layanan::where('nama', 'LIKE', '%Pencatatan Ormas%')->firstOrFail();
+            $layanan = Layanan::where('nama', 'LIKE', '%(SKT) Ormas%')->firstOrFail();
             $noTiket = 'ORMAS-' . Carbon::now()->format('dmY') . '-' . Str::upper(Str::random(4));
             $aksiAudit = 'create';
             
@@ -104,9 +113,7 @@ class ServiceController extends Controller
             }
 
             // 2. Simpan Data Utama (formulir_permohonan_baru_pencatatan_ormas)
-            $formulirUuid = (string) Str::uuid();
-            FormulirPermohonanOrmas::create([
-                'uuid'                      => $formulirUuid,
+            $formulir = FormulirPermohonanBaruPencatatanOrmas::create([
                 'tiket_id'                  => $tiket->uuid,
                 'nomor'                     => $request->nomor,
                 'perihal'                   => $request->perihal,
@@ -131,6 +138,8 @@ class ServiceController extends Controller
                 'file_kop_surat'            => $this->handleFileUpload($request->file('file_kop_surat'), $userId, 'private/ormas/kop_surat'),
                 'file_tanda_tangan_pemohon' => $this->handleFileUpload($request->file('file_tanda_tangan_pemohon'), $userId, 'private/ormas/ttd'),
             ]);
+
+            $formulirUuid = $formulir->uuid;
 
             // 3. Simpan Biodata Pengurus (Loop array ketua, sekretaris, bendahara)
             if ($request->has('pengurus')) {
@@ -204,11 +213,10 @@ class ServiceController extends Controller
 
             // 6. Catat Riwayat dan Jejak Audit
             RiwayatStatusTiket::create([
-                'uuid'      => (string) Str::uuid(), 
-                'tiket_id'  => $tiket->uuid,
-                'users_id'  => $userId, 
-                'status'    => 'diajukan',
-                'catatan'   => 'Permohonan Pencatatan Ormas berhasil diajukan.'
+                'tiket_id'          => $tiket->uuid,
+                'users_id'          => $userId, 
+                'status_sebelumnya' => $request->filled('tiket_uuid') ? 'draft' : null,
+                'status_baru'       => 'diajukan'
             ]);
             
             JejakAudit::create([
@@ -248,7 +256,7 @@ class ServiceController extends Controller
         DB::beginTransaction();
         try {
             $userId = Auth::user()->uuid;
-            $layanan = Layanan::where('nama', 'LIKE', '%Pencatatan Ormas%')->firstOrFail();
+            $layanan = Layanan::where('nama', 'LIKE', '%(SKT) Ormas%')->firstOrFail();
             
             // Ambil semua payload (termasuk array multi-dimensi dari blade), kecualikan file
             $payload = $request->except(['_token', 'tiket_uuid']);
@@ -282,11 +290,10 @@ class ServiceController extends Controller
                 ]);
 
                 RiwayatStatusTiket::create([
-                    'uuid'      => (string) Str::uuid(), 
-                    'tiket_id'  => $tiket->uuid,
-                    'users_id'  => $userId, 
-                    'status'    => 'draft',
-                    'catatan'   => 'Sistem menyimpan draft otomatis'
+                    'tiket_id'          => $tiket->uuid,
+                    'users_id'          => $userId, 
+                    'status_sebelumnya' => null,
+                    'status_baru'       => 'draft'
                 ]);
             } else {
                 $tiket->update([
