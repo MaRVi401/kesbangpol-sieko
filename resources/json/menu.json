@@ -44,6 +44,37 @@
                     "route": "pemohon.history.index"
                 }
             ]
+        },
+
+        {
+            "role": "petugas_verifikasi_data",
+            "items": [
+                {
+                    "name": "Dashboard",
+                    "icon": "ti ti-layout-dashboard",
+                    "route": "dashboard"
+                },
+                {
+                    "name": "Tiket Masuk",
+                    "icon": "ti ti-ticket",
+                    "route": "verif_data.ticket.index"
+                },
+                {
+                    "name": "Meja Kerja",
+                    "icon": "ti ti-briefcase",
+                    "route": "verif_data.ticket.workdesk"
+                },
+                {
+                    "name": "Revisi Kadis",
+                    "icon": "ti ti-edit",
+                    "route": "verif_data.ticket.revisi"
+                },
+                {
+                    "name": "Riwayat Penanganan",
+                    "icon": "ti ti-history",
+                    "route": "verif_data.ticket.history"
+                }
+            ]
         }
        
     ]

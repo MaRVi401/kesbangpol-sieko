@@ -38,7 +38,7 @@ class TicketController extends Controller
 
         $tickets = $query->latest()->paginate(10);
 
-        return view('pages.operator.ticket.index', compact('tickets'));
+        return view('pages.PetugasVerifikasiData.ticket.index', compact('tickets'));
     }
 
     

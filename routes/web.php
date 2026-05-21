@@ -145,7 +145,23 @@ Route::middleware('auth')->group(function () {
 
    // 3. Petugas Verifikasi Data
     Route::middleware('can:petugas_verifikasi_data')->prefix('verifikator-data')->name('verif_data.')->group(function () {
-        
+        Route::controller(\App\Http\Controllers\PetugasVerifikasiData\TicketController::class)->name('ticket.')->group(function () {
+            Route::get('/tiket-masuk', 'index')->name('index');
+            Route::post('/tiket/{uuid}/handle', 'handle')->name('handle');
+            
+            Route::get('/meja-kerja', 'workDesk')->name('workdesk');
+            Route::put('/tiket/{uuid}', 'update')->name('update');
+            Route::get('/tiket/{uuid}/detail', 'show')->name('show');
+            
+            Route::get('/riwayat', 'history')->name('history');
+            
+           
+            Route::get('/revisi', 'revisi')->name('revisi'); 
+            
+            
+            Route::get('/tiket/{uuid}/preview-pdf', 'previewPdf')->name('preview-pdf');
+            Route::get('/tiket/{uuid}/download-docx', 'downloadDocx')->name('download-docx');
+        });
     });
 
     // 4. Petugas Verifikasi LapanRoute::get('/', function () { return 'Ini halaman Kaban'; })->name('index');gan
