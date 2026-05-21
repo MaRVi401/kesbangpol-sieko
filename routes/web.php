@@ -137,6 +137,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('services', ServiceController::class)->only(['index', 'store']);
         Route::post('services/autosave', [ServiceController::class, 'autosave'])->name('services.autosave');
         Route::get('/history', [ServiceHistoryTicketController::class, 'index'])->name('history.index');
+        Route::get('/history/{uuid}', [ServiceHistoryTicketController::class, 'show'])->name('history.show');
+
+        Route::delete('/history/{uuid}', [ServiceHistoryTicketController::class, 'destroy'])->name('history.destroy');
         
     });
 

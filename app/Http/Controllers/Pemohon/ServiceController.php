@@ -324,18 +324,19 @@ class ServiceController extends Controller
 
         $extension = strtolower($file->getClientOriginalExtension());
         $hash = hash_file('sha256', $file->path());
+        
+        // Tambahkan random string agar nama file selalu unik
+        $unique = Str::random(6); 
 
-        // Jika file berupa gambar, ubah ke WebP seperti logic Anda sebelumnya
         if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-            $fileName = $userId . '_' . $hash . '.webp';
+            $fileName = $userId . '_' . $unique . '_' . $hash . '.webp';
             $image = Image::read($file);
             $encodedImage = $image->toWebp(80); 
             Storage::put($path . '/' . $fileName, (string) $encodedImage);
             return $fileName;
         } 
         
-        // Jika file PDF atau format lain yang diizinkan, upload langsung
-        $fileName = $userId . '_' . $hash . '.' . $extension;
+        $fileName = $userId . '_' . $unique . '_' . $hash . '.' . $extension;
         Storage::putFileAs($path, $file, $fileName);
         
         return $fileName;
