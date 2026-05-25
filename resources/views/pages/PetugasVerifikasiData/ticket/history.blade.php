@@ -34,7 +34,7 @@
 
         <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 mb-6">
             <div class="w-full md:w-3/4">
-                <form action="{{ route('ticket.history') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full">
+                <form action="{{ route('verif_data.ticket.history') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full">
                     
                     <div class="w-full md:w-48 shrink-0">
                         <select name="filter_time" onchange="this.form.submit()" 
@@ -58,7 +58,7 @@
                             placeholder="Cari no tiket, pemohon, atau layanan...">
 
                         @if (request('search') || request('filter_time'))
-                            <a href="{{ route('ticket.history') }}"
+                            <a href="{{ route('verif_data.ticket.history') }}"
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-red-500 transition-colors"
                                 title="Bersihkan Pencarian dan Filter">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,17 +117,17 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    @if($ticket->status === 'selesai')
+                                    @if($ticket->status === 'persyaratan_lengkap')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 shadow-sm">
-                                            Selesai
+                                            Persyaratan Lengkap
                                         </span>
-                                    @elseif($ticket->status === 'ditolak')
+                                    @elseif($ticket->status === 'data_tidak_sesuai')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 shadow-sm">
-                                            Ditolak
+                                            Data Tidak Sesuai
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 shadow-sm">
-                                            {{ ucfirst($ticket->status) }}
+                                            {{ ucwords(str_replace('_', ' ', $ticket->status)) }}
                                         </span>
                                     @endif
                                 </td>
@@ -155,12 +155,12 @@
                                             @if(request('search'))
                                                 Riwayat tiket dengan kata kunci tersebut tidak ditemukan.
                                             @else
-                                                Belum ada riwayat tiket yang Anda selesaikan atau tolak.
+                                                Belum ada riwayat tiket yang Anda verifikasi atau tolak.
                                             @endif
                                         </p>
 
                                         @if(request('search'))
-                                            <a href="{{ route('ticket.history') }}"
+                                            <a href="{{ route('verif_data.ticket.history') }}"
                                                 class="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-2">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -219,10 +219,12 @@
                                 <div>
                                     <label class="block mb-1 text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status Akhir</label>
                                     <div>
-                                        @if($ticket->status === 'selesai')
-                                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 border border-green-300">Selesai</span>
+                                        @if($ticket->status === 'persyaratan_lengkap')
+                                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 border border-green-300">Persyaratan Lengkap</span>
+                                        @elseif($ticket->status === 'data_tidak_sesuai')
+                                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300 border border-red-300">Data Tidak Sesuai</span>
                                         @else
-                                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300 border border-red-300">Ditolak</span>
+                                            <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-300">{{ ucwords(str_replace('_', ' ', $ticket->status)) }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -231,10 +233,10 @@
                             <hr class="border-gray-200 dark:border-gray-700">
 
                             <div>
-                                <label class="block mb-1 text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Isi Pengaduan / Deskripsi</label>
+                                <label class="block mb-1 text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Deskripsi / Catatan Tambahan</label>
                                 <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <p class="text-sm text-gray-700 dark:text-gray-300 italic">
-                                        "{{ $ticket->detailPengaduan->deskripsi ?? 'Tidak ada deskripsi tambahan.' }}"
+                                        "{{ $ticket->deskripsi ?? 'Tidak ada deskripsi tambahan.' }}"
                                     </p>
                                 </div>
                             </div>

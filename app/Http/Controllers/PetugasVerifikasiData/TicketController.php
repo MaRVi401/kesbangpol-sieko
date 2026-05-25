@@ -183,6 +183,6 @@ class TicketController extends Controller
 
         $tickets = $query->latest('updated_at')->paginate(10);
 
-        return view('ticket.history', compact('tickets'));
+        return view('pages.PetugasVerifikasiData.ticket.history', compact('tickets'));
     }
 }
