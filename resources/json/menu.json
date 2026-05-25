@@ -65,11 +65,6 @@
                     "route": "verif_data.ticket.workdesk"
                 },
                 {
-                    "name": "Revisi Kadis",
-                    "icon": "ti ti-edit",
-                    "route": "verif_data.ticket.revisi"
-                },
-                {
                     "name": "Riwayat Penanganan",
                     "icon": "ti ti-history",
                     "route": "verif_data.ticket.history"

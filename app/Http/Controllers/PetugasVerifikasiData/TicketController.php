@@ -81,6 +81,7 @@ class TicketController extends Controller
     {
         $search = $request->input('search');
 
+        // Relasi sudah sesuai dengan tabel di migration
         $query = Tiket::with(['user', 'layanan', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
             ->where('petugas_id', $request->user()->uuid)
             ->where('status', 'pemeriksaan_kelengkapan');
@@ -99,7 +100,8 @@ class TicketController extends Controller
 
         $tickets = $query->latest()->paginate(10);
 
-        return view('ticket.workdesk', compact('tickets'));
+        // PERBAIKAN: Sesuaikan path direktori view dengan struktur yang benar
+        return view('pages.PetugasVerifikasiData.ticket.workdesk', compact('tickets'));
     }
 
     public function update(Request $request, string $uuid): RedirectResponse

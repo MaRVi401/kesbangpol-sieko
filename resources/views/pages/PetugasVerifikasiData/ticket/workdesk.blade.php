@@ -134,7 +134,7 @@
                                                     </button>
                                                 </div>
 
-                                                <form action="{{ route('ticket.update', $ticket->uuid) }}"
+                                                <form action="{{ route('verif_data.ticket.update', $ticket->uuid) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('PUT')
@@ -174,7 +174,6 @@
                                                             </div>
                                                         @endif
 
-                                                        {{-- Menampilkan Screenshot Pengaduan (Folder: pengaduan) --}}
                                                         @if ($ticket->detailPengaduan && $ticket->detailPengaduan->lampiran_screenshot)
                                                             <div class="mt-4">
                                                                 <label class="block text-xs text-gray-500 uppercase mb-1">Screenshot Pengaduan</label>
@@ -186,22 +185,12 @@
 
                                                         <hr class="dark:border-gray-600">
 
-                                                        <!-- POSISI YANG BENAR UNTUK DROPDOWN PENANDATANGAN -->
-                                                        <div>
-                                                            <label class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">Pilih Penandatangan Surat (Wasnas)</label>
-                                                            <select data-uuid="{{ $ticket->uuid }}" class="penandatangan-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer">
-                                                                <option value="">-- Pilih Penandatangan untuk memunculkan dokumen --</option>
-                                                                @foreach($penandatangan_list as $penandatangan)
-                                                                    <option value="{{ $penandatangan->uuid }}">{{ $penandatangan->nama }} (NIP: {{ $penandatangan->nip }})</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
                                                         <div>
                                                             <label class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">Pilih Status Akhir</label>
                                                             <select name="status" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer">
                                                                 <option value="">-- Pilih Status --</option>
-                                                                <option value="verifikasi lengkap">Verifikasi Lengkap (Berkas Sesuai)</option>
-                                                                <option value="verifikasi gagal">Verifikasi Gagal (Berkas Tidak Sesuai)</option>
+                                                                <option value="persyaratan_lengkap">Verifikasi Lengkap (Berkas Sesuai)</option>
+                                                                <option value="data_tidak_sesuai">Verifikasi Gagal (Berkas Tidak Sesuai)</option>
                                                             </select>
                                                         </div>
                                                         <div>
@@ -216,7 +205,6 @@
 
                                                     <div class="flex flex-wrap items-center justify-between p-6 border-t border-gray-200 rounded-b dark:border-gray-600 gap-4">
     
-                                                        <!-- Kelompok Kiri: Aksi Form -->
                                                         <div class="flex items-center gap-2">
                                                             <button type="submit" class="text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-all cursor-pointer whitespace-nowrap">
                                                                 Simpan Perubahan
@@ -226,18 +214,15 @@
                                                             </button>
                                                         </div>
 
-                                                        <!-- Kelompok Kanan: Aksi Dokumen -->
                                                         <div id="doc-actions-{{ $ticket->uuid }}" class="hidden items-center gap-2">
-                                                            <!-- Tombol Edit DOCX -->
-                                                            <a id="btn-docx-{{ $ticket->uuid }}" data-base-url="{{ route('ticket.download-docx', $ticket->uuid) }}" href="#" class="flex items-center gap-2 text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-lg text-sm px-4 py-2.5 text-center transition-all cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                                                            <a id="btn-docx-{{ $ticket->uuid }}" data-base-url="{{ route('verif_data.ticket.download-docx', $ticket->uuid) }}" href="#" class="flex items-center gap-2 text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-lg text-sm px-4 py-2.5 text-center transition-all cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                                 </svg>
                                                                 Download DOCX
                                                             </a>
 
-                                                            <!-- Tombol Preview PDF -->
-                                                            <a id="btn-pdf-{{ $ticket->uuid }}" data-base-url="{{ route('ticket.preview-pdf', $ticket->uuid) }}" href="#" target="_blank" class="flex items-center gap-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center transition-all cursor-pointer whitespace-nowrap dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                            <a id="btn-pdf-{{ $ticket->uuid }}" data-base-url="{{ route('verif_data.ticket.preview-pdf', $ticket->uuid) }}" href="#" target="_blank" class="flex items-center gap-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center transition-all cursor-pointer whitespace-nowrap dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
