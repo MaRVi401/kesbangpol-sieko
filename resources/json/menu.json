@@ -70,6 +70,27 @@
                     "route": "verif_data.ticket.history"
                 }
             ]
+        },
+
+        {
+            "role": "petugas_verifikasi_lapangan",
+            "items": [
+                {
+                    "name": "Dashboard",
+                    "icon": "ti ti-layout-dashboard",
+                    "route": "dashboard"
+                },
+                {
+                    "name": "Antrean Verifikasi",
+                    "icon": "ti ti-map-pin",
+                    "route": "verif_lapangan.ticket.index"
+                },
+                {
+                    "name": "Riwayat Verifikasi",
+                    "icon": "ti ti-history",
+                    "route": "verif_lapangan.ticket.history"
+                }
+            ]
         }
        
     ]
