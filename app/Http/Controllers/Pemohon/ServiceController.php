@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 
 use App\Models\Tiket;
 use App\Models\Layanan;
@@ -27,7 +26,6 @@ class ServiceController extends Controller
     {
         $userId = Auth::user()->uuid;
         
-        // Ubah pencarian draft ke Layanan Pencatatan Ormas
         $draft = Tiket::where('users_id', $userId)
                       ->where('status', 'draft')
                       ->whereHas('layanan', function($q) {
@@ -61,23 +59,20 @@ class ServiceController extends Controller
             'pengurus'                                => 'required|array',
             'surat_pernyataan'                        => 'required|array',
             'formulir_isian'                          => 'required|array',
-            'file_kop_surat'                          => 'nullable|mimes:pdf,jpeg,png,jpg,webp|max:500',
-            'file_tanda_tangan_pemohon'               => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-            'pengurus.*.foto_resmi'                   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-            'pengurus.*.file_tanda_tangan'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-            'surat_pernyataan.file_ttd_ketua_materai' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-            'surat_pernyataan.file_ttd_sekretaris'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-            'formulir_isian.file_logo_organisasi'     => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-            'formulir_isian.file_bendera_organisasi'  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:500',
-        ], [
-            'max' => 'Ukuran file :attribute tidak boleh lebih dari 500 KB.'
+            'file_kop_surat'                          => 'nullable|mimes:pdf,jpeg,png,jpg,webp|max:2048',
+            'file_tanda_tangan_pemohon'               => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'pengurus.*.foto_resmi'                   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'pengurus.*.file_tanda_tangan'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'surat_pernyataan.file_ttd_ketua_materai' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'surat_pernyataan.file_ttd_sekretaris'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'formulir_isian.file_logo_organisasi'     => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'formulir_isian.file_bendera_organisasi'  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
             $userId = Auth::user()->uuid;
             
-            // 1. Persiapan Layanan dan Tiket
             $layanan = Layanan::where('nama', 'LIKE', '%(SKT) Ormas%')->firstOrFail();
             $noTiket = 'ORMAS-' . Carbon::now()->format('dmY') . '-' . Str::upper(Str::random(4));
             $aksiAudit = 'create';
@@ -112,7 +107,6 @@ class ServiceController extends Controller
                 ]);
             }
 
-            // 2. Simpan Data Utama (formulir_permohonan_baru_pencatatan_ormas)
             $formulir = FormulirPermohonanBaruPencatatanOrmas::create([
                 'tiket_id'                  => $tiket->uuid,
                 'nomor'                     => $request->nomor,
@@ -141,7 +135,6 @@ class ServiceController extends Controller
 
             $formulirUuid = $formulir->uuid;
 
-            // 3. Simpan Biodata Pengurus (Loop array ketua, sekretaris, bendahara)
             if ($request->has('pengurus')) {
                 foreach ($request->pengurus as $key => $pengurusData) {
                     BiodataPengurusOrmas::create([
@@ -169,7 +162,6 @@ class ServiceController extends Controller
                 }
             }
 
-            // 4. Simpan Surat Pernyataan
             $pernyataan = $request->surat_pernyataan;
             SuratPernyataanOrmas::create([
                 'uuid'                       => (string) Str::uuid(),
@@ -183,7 +175,6 @@ class ServiceController extends Controller
                 'file_ttd_sekretaris'        => $this->handleFileUpload($request->file('surat_pernyataan.file_ttd_sekretaris'), $userId, 'private/ormas/pernyataan'),
             ]);
 
-            // 5. Simpan Formulir Isian
             $isian = $request->formulir_isian;
             FormulirIsianOrmas::create([
                 'uuid'                           => (string) Str::uuid(),
@@ -211,7 +202,6 @@ class ServiceController extends Controller
                 'file_bendera_organisasi'        => $this->handleFileUpload($request->file('formulir_isian.file_bendera_organisasi'), $userId, 'private/ormas/bendera'),
             ]);
 
-            // 6. Catat Riwayat dan Jejak Audit
             RiwayatStatusTiket::create([
                 'tiket_id'          => $tiket->uuid,
                 'users_id'          => $userId, 
@@ -242,7 +232,7 @@ class ServiceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -258,10 +248,8 @@ class ServiceController extends Controller
             $userId = Auth::user()->uuid;
             $layanan = Layanan::where('nama', 'LIKE', '%(SKT) Ormas%')->firstOrFail();
             
-            // Ambil semua payload (termasuk array multi-dimensi dari blade), kecualikan file
             $payload = $request->except(['_token', 'tiket_uuid']);
             
-            // Bersihkan data file/gambar dari payload agar JSON bersih
             foreach ($payload as $key => $value) {
                 if ($request->hasFile($key)) {
                     unset($payload[$key]);
@@ -311,30 +299,17 @@ class ServiceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Gagal autosave: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Helper function untuk handle upload file (Image WebP / PDF)
-     */
     private function handleFileUpload($file, $userId, $path)
     {
         if (!$file) return null;
 
         $extension = strtolower($file->getClientOriginalExtension());
         $hash = hash_file('sha256', $file->path());
-        
-        // Tambahkan random string agar nama file selalu unik
         $unique = Str::random(6); 
-
-        if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-            $fileName = $userId . '_' . $unique . '_' . $hash . '.webp';
-            $image = Image::read($file);
-            $encodedImage = $image->toWebp(80); 
-            Storage::put($path . '/' . $fileName, (string) $encodedImage);
-            return $fileName;
-        } 
         
         $fileName = $userId . '_' . $unique . '_' . $hash . '.' . $extension;
         Storage::putFileAs($path, $file, $fileName);

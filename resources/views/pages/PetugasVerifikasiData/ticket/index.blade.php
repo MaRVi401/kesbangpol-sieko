@@ -170,7 +170,6 @@
                                                         <strong>Deskripsi:</strong>
                                                         {{ $ticket->deskripsi ?? ($ticket->detailPengaduan->detail_pengaduan ?? '-') }}
                                                     </p>
-                                                    {{-- Menampilkan Lampiran Umum (Folder: lampiran_tiket) --}}
                                                 @if ($ticket->lampiran)
                                                     <div class="mt-4">
                                                         <p class="text-gray-900 dark:text-white mb-2"><strong>Lampiran:</strong></p>
@@ -180,7 +179,6 @@
                                                     </div>
                                                 @endif
 
-                                                {{-- Menampilkan Screenshot Pengaduan (Folder: pengaduan) --}}
                                                 @if ($ticket->detailPengaduan && $ticket->detailPengaduan->lampiran_screenshot)
                                                     <div class="mt-4">
                                                         <p class="text-gray-900 dark:text-white mb-2"><strong>Screenshot Pengaduan:</strong></p>
@@ -193,7 +191,7 @@
 
                                                 <div
                                                     class="flex items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
-                                                    <form action="{{ route('ticket.handle', $ticket->uuid) }}"
+                                                    <form action="{{ route('verif_data.ticket.handle', $ticket->uuid) }}"
                                                         method="POST">
                                                         @csrf
                                                         <button type="submit"
