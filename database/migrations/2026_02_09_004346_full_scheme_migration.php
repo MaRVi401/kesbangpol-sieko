@@ -129,6 +129,7 @@ return new class extends Migration
             $table->foreignUuid('petugas_lapangan_id')->constrained('users', 'uuid');
             $table->date('tanggal_verifikasi');
             $table->text('catatan_lapangan');
+            $table->json('foto_dokumentasi')->nullable();
             $table->boolean('is_sesuai')->default(false);
             $table->string('file_berita_acara_path')->nullable();
             $table->timestamps();

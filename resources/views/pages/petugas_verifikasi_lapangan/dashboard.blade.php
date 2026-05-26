@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('layouts.main')
 
 @section('title', 'Dashboard Petugas Verifikasi Lapangan')
 

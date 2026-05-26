@@ -71,7 +71,6 @@
                 }
             ]
         },
-
         {
             "role": "petugas_verifikasi_lapangan",
             "items": [
@@ -82,8 +81,13 @@
                 },
                 {
                     "name": "Antrean Verifikasi",
-                    "icon": "ti ti-map-pin",
+                    "icon": "ti ti-ticket",
                     "route": "verif_lapangan.ticket.index"
+                },
+                {
+                    "name": "Meja Kerja",
+                    "icon": "ti ti-briefcase",
+                    "route": "verif_lapangan.ticket.workdesk"
                 },
                 {
                     "name": "Riwayat Verifikasi",

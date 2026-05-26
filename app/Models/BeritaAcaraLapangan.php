@@ -15,12 +15,14 @@ class BeritaAcaraLapangan extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    
     protected $fillable = [
         'tiket_id',
         'petugas_lapangan_id',
         'tanggal_verifikasi',
         'catatan_lapangan',
         'is_sesuai',
+        'foto_dokumentasi', 
         'file_berita_acara_path'
     ];
 
@@ -29,6 +31,7 @@ class BeritaAcaraLapangan extends Model
         return [
             'tanggal_verifikasi' => 'date',
             'is_sesuai' => 'boolean',
+            'foto_dokumentasi' => 'array', 
         ];
     }
 
