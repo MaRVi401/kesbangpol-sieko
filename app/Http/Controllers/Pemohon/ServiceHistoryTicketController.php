@@ -89,7 +89,6 @@ class ServiceHistoryTicketController extends Controller
 
     public function show($uuid)
     {
-        
         $ticket = Tiket::with([
             'layanan',
             'komentar',
@@ -98,9 +97,9 @@ class ServiceHistoryTicketController extends Controller
             'formulirPermohonanBaruOrmas.formulirIsian'
         ])->where('uuid', $uuid)->firstOrFail();
         
-        
         $jumlahRevisi = RiwayatStatusTiket::where('tiket_id', $ticket->uuid)
                             ->where('status_baru', 'draft')
+                            ->whereNotNull('status_sebelumnya')
                             ->count();
         
         return view('pages.pemohon.DetailSuratPermohonan.show', compact('ticket', 'jumlahRevisi'));
