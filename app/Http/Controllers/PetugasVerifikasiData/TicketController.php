@@ -118,8 +118,10 @@ class TicketController extends Controller
         $statusLama = $ticket->status;
 
         DB::transaction(function () use ($request, $ticket, $statusLama) {
+            // PERBAIKAN: Kosongkan petugas_id agar tiket masuk ke antrean berikutnya
             $ticket->update([
                 'status' => $request->status,
+                'petugas_id' => null, 
             ]);
 
             DB::table('komentar_tiket')->insert([
@@ -144,7 +146,7 @@ class TicketController extends Controller
 
         return redirect()
             ->route('verif_data.ticket.workdesk')
-            ->with('success', 'Tiket berhasil diverifikasi.');
+            ->with('success', 'Tiket berhasil diverifikasi dan dilepas ke antrean selanjutnya.');
     }
 
     public function history(Request $request): View
@@ -154,8 +156,12 @@ class TicketController extends Controller
         $userUuid = $request->user()->uuid;
 
         $query = Tiket::with(['user', 'layanan'])
-            ->where('petugas_id', $userUuid)
-            ->whereIn('status', ['persyaratan_lengkap', 'data_tidak_sesuai']);
+            ->whereIn('uuid', function ($q) use ($userUuid) {
+                $q->select('tiket_id')
+                  ->from('riwayat_status_tiket')
+                  ->where('users_id', $userUuid)
+                  ->whereIn('status_baru', ['persyaratan_lengkap', 'data_tidak_sesuai']);
+            });
 
         if ($filterTime) {
             $now = now();
