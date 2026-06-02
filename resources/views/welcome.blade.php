@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'SIEKOP KESBANGPOL Kabupaten Subang')
+@section('title', 'SIEKO KESBANGPOL Kabupaten Subang')
 
 @section('content')
     {{-- Menggunakan @include yang benar agar struktur halaman tidak bertumpuk --}}
