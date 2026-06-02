@@ -19,7 +19,7 @@ class TicketController extends Controller
         $search = $request->input('search');
 
         $query = Tiket::with(['user', 'layanan'])
-            ->where('status', 'diajukan')
+            ->whereIn('status', ['diajukan', 'review_berita_acara']) 
             ->whereNull('petugas_id');
 
         if ($search) {
@@ -46,9 +46,12 @@ class TicketController extends Controller
             ->firstOrFail();
 
         DB::transaction(function () use ($ticket, $request) {
+            $statusSebelumnya = $ticket->status;
+            $statusBaru = ($statusSebelumnya === 'diajukan') ? 'pemeriksaan_kelengkapan' : 'review_berita_acara';
+
             $ticket->update([
                 'petugas_id' => $request->user()->uuid,
-                'status'     => 'pemeriksaan_kelengkapan',
+                'status'     => $statusBaru,
             ]);
 
             DB::table('riwayat_status_tiket')->insert([
@@ -84,7 +87,7 @@ class TicketController extends Controller
         // Relasi sudah sesuai dengan tabel di migration
         $query = Tiket::with(['user', 'layanan', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
             ->where('petugas_id', $request->user()->uuid)
-            ->where('status', 'pemeriksaan_kelengkapan');
+            ->whereIn('status', ['pemeriksaan_kelengkapan', 'review_berita_acara']);
 
         if ($search) {
             $query->where(function (Builder $q) use ($search) {
@@ -107,7 +110,7 @@ class TicketController extends Controller
     public function update(Request $request, string $uuid): RedirectResponse
     {
         $request->validate([
-            'status'   => 'required|in:persyaratan_lengkap,data_tidak_sesuai',
+            'status'   => 'required|in:persyaratan_lengkap,data_tidak_sesuai,pembuatan_draft_skt', 
             'komentar' => 'required|string|min:1',
         ]);
 
@@ -132,6 +135,12 @@ class TicketController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            if ($statusLama === 'review_berita_acara' && $request->status === 'pembuatan_draft_skt') {
+                DB::table('berita_acara_lapangan')
+                    ->where('tiket_id', $ticket->uuid)
+                    ->update(['is_sesuai' => true]);
+            }
 
             DB::table('riwayat_status_tiket')->insert([
                 'uuid'              => (string) Str::uuid(),
@@ -190,5 +199,23 @@ class TicketController extends Controller
         $tickets = $query->latest('updated_at')->paginate(10);
 
         return view('pages.PetugasVerifikasiData.ticket.history', compact('tickets'));
+    }
+
+
+    public function show(Request $request, string $uuid): View
+    {
+        
+        $ticket = Tiket::with([
+            'user', 
+            'layanan',
+            'formulirPermohonanBaruOrmas.biodataPengurus',
+            'formulirPermohonanBaruOrmas.suratPernyataan',
+            'formulirPermohonanBaruOrmas.formulirIsian'
+        ])
+        ->where('uuid', $uuid)
+        ->where('petugas_id', $request->user()->uuid)
+        ->firstOrFail();
+
+        return view('pages.PetugasVerifikasiData.ticket.show', compact('ticket'));
     }
 }

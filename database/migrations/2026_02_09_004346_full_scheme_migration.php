@@ -113,6 +113,7 @@ return new class extends Migration
                 'persyaratan_lengkap',
                 'verifikasi_lapangan',
                 'pembuatan_berita_acara',
+                'review_berita_acara', // <--- Tambahkan baris ini
                 'pembuatan_draft_skt',
                 'menunggu_penandatanganan',
                 'skt_disetujui',

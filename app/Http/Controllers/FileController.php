@@ -12,8 +12,23 @@ class FileController extends Controller
             abort(404);
         }
 
-        // Izinkan super_admin melihat semua file, 
-        if (auth()->user()->role !== 'super_admin' && !str_contains($path, auth()->id())) {
+        $user = auth()->user();
+        
+        $allowedRoles = [
+            'super_admin',
+            'petugas_verifikasi_data',
+            'petugas_verifikasi_lapangan',
+            'analis_kebijakan_ahli_muda',
+            'kabid_kesbak',
+            'sekban',
+            'kaban'
+        ];
+
+        $isAuthorizedRole = in_array($user->role, $allowedRoles);
+        
+        $isOwner = str_contains($path, auth()->id());
+
+        if (!$isAuthorizedRole && !$isOwner) {
             abort(403);
         }
 
