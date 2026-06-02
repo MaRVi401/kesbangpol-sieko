@@ -6,7 +6,7 @@
                 <img src="{{ asset('assets/images/landingPages/logo-kabSubang.webp') }}" class="h-10 sm:h-12 w-auto"
                     alt="Logo Instansi">
                 <div class="flex flex-col border-l-2 border-red-600 pl-3 font-sans">
-                    <span class="font-bold text-gray-900 dark:text-white leading-none text-sm sm:text-lg">KESBANGPOL</span>
+                    <span class="font-bold text-gray-900 dark:text-white leading-none text-sm sm:text-lg">SIEKO</span>
                     <span class="text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 tracking-widest uppercase font-semibold">Kabupaten Subang</span>
                 </div>
             </div>

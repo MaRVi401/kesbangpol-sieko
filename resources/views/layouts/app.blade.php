@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'SIREKIPEMA')</title>
+    <title>@yield('title', 'SIEKO')</title>
     <link rel="icon" type="image" href="{{ asset('assets/images/landingPages/logo-kabSubang.webp') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
