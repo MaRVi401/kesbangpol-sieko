@@ -30,7 +30,7 @@ class LoginController extends Controller
             $user = Auth::user();
 
             // --- PENGECEKAN STATUS KHUSUS MAHASISWA ---
-            if ($user->role === 'mahasiswa') {
+            if ($user->role === 'pemohon') {
                 $status = $user->mahasiswa->status_akun ?? null;
 
                 if ($status !== 'aktif') {

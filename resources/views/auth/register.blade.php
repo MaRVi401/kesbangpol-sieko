@@ -32,21 +32,31 @@
                         </div>
                     @endif
 
-                    {{-- Menambahkan novalidate untuk mematikan validasi bawaan browser --}}
                     <form class="space-y-4 md:space-y-6" action="{{ route('register') }}" method="POST" enctype="multipart/form-data" novalidate>
                         @csrf
 
                         {{-- Bagian 1: Informasi Dasar --}}
                         <div class="space-y-4">
                             <h2 class="text-md font-semibold text-gray-700 dark:text-gray-300 border-b pb-1">Informasi Akun</h2>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
-                                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Lengkap</label>
+                                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Lengkap Ketua</label>
                                     <input type="text" name="name" id="name" value="{{ old('name') }}"
                                         class="bg-gray-50 border @error('name') border-red-500 @else border-gray-300 @enderror text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                        placeholder="Nama sesuai KTM">
+                                        placeholder="Nama sesuai KTP">
                                     @error('name')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- FIELD: Nama Organisasi dipindah ke sini --}}
+                                <div class="md:col-span-2">
+                                    <label for="nama_organisasi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Organisasi</label>
+                                    <input type="text" name="nama_organisasi" id="nama_organisasi" value="{{ old('nama_organisasi') }}"
+                                        class="bg-gray-50 border @error('nama_organisasi') border-red-500 @else border-gray-300 @enderror text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        placeholder="Contoh: Ormas Jawa">
+                                    @error('nama_organisasi')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -62,11 +72,11 @@
                                 </div>
 
                                 <div>
-                                    <label for="nim" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">NIM</label>
-                                    <input type="text" name="nim" id="nim" value="{{ old('nim') }}"
-                                        class="bg-gray-50 border @error('nim') border-red-500 @else border-gray-300 @enderror text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                        placeholder="Contoh: 210xxxx">
-                                    @error('nim')
+                                    <label for="nik" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">NIK Ketua</label>
+                                    <input type="text" name="nik" id="nik" value="{{ old('nik') }}"
+                                        class="bg-gray-50 border @error('nik') border-red-500 @else border-gray-300 @enderror text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        placeholder="Contoh: 3213012345678901" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric" minlength="16" maxlength="16">
+                                    @error('nik')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -76,7 +86,7 @@
                         {{-- Bagian 2: Kontak & Alamat --}}
                         <div class="space-y-4">
                             <h2 class="text-md font-semibold text-gray-700 dark:text-gray-300 border-b pb-1">Kontak & Alamat</h2>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
@@ -92,7 +102,7 @@
                                     <label for="no_wa" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor WhatsApp</label>
                                     <input type="text" name="no_wa" id="no_wa" value="{{ old('no_wa') }}"
                                         class="bg-gray-50 border @error('no_wa') border-red-500 @else border-gray-300 @enderror text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                        placeholder="0812xxxx" oninput="this.value = this.value.replace(/[^0-9]/g, '')"  inputmode="numeric" minlength="10" maxlength="15">
+                                        placeholder="0812xxxx" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric" minlength="10" maxlength="15">
                                     @error('no_wa')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -131,14 +141,14 @@
                         {{-- Bagian 4: Dokumen --}}
                         <div class="space-y-4">
                             <h2 class="text-md font-semibold text-blue-600 dark:text-blue-400 border-b pb-1">Dokumen Verifikasi</h2>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="ktm" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload KTM (Gambar)</label>
-                                    <input type="file" name="ktm" id="ktm" accept="image/*"
-                                        class="block w-full text-sm text-gray-900 border @error('ktm') border-red-500 @else border-gray-300 @enderror rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="kta" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload KTP Ketua (Gambar)</label>
+                                    <input type="file" name="kta" id="kta" accept="image/*"
+                                        class="block w-full text-sm text-gray-900 border @error('kta') border-red-500 @else border-gray-300 @enderror rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600">
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-300">JPG, PNG atau JPEG (Max. 5MB).</p>
-                                    @error('ktm')
+                                    @error('kta')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>

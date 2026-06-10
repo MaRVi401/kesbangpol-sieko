@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Mahasiswa;
+use App\Models\Pemohon; // <-- DIUBAH: Menggunakan model Pemohon
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +23,9 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'no_wa' => 'required|regex:/^[0-9]+$/|min:10|max:15',
             'alamat' => 'required|string',
-            'nim' => 'required|string|max:20|unique:mahasiswa,nim',
-            'ktm' => 'required|image|mimes:jpg,png,jpeg|max:5120',
+            'nik' => 'required|string|size:16|unique:pemohon,nik_ketua',
+            'nama_organisasi' => 'required|string|max:255',
+            'kta' => 'required|image|mimes:jpg,png,jpeg|max:5120',
             'surat_rekomendasi' => 'required|mimes:pdf|max:2048',
         ];
 
@@ -43,31 +44,33 @@ class RegisterController extends Controller
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => 'mahasiswa',
+                'role' => 'pemohon', // <-- DIUBAH: Role menjadi pemohon
                 'no_wa' => $request->no_wa,
                 'alamat' => $request->alamat,
             ]);
 
-            // --- PROSES KOMPRESI GAMBAR KTM KE WEBP ---
-            $fileKtm = $request->file('ktm');
-            $fileNameKtm = 'KTM_' . $request->nim . '_' . time() . '.webp';
-            $pathKtm = 'verifikasi/ktm/' . $fileNameKtm;
+            // --- PROSES KOMPRESI GAMBAR KTA KE WEBP ---
+            $fileKta = $request->file('kta');
+            $fileNameKta = 'KTA_' . $request->nik . '_' . time() . '.webp';
+            $pathKta = 'verifikasi/kta/' . $fileNameKta;
 
-            $img = Image::read($fileKtm)
+            $img = Image::read($fileKta)
                 ->scale(width: 1200)
                 ->encodeByExtension('webp', quality: 75);
 
-            Storage::disk('local')->put($pathKtm, (string) $img);
-            $uploadedFiles[] = $pathKtm;
+            Storage::disk('local')->put($pathKta, (string) $img);
+            $uploadedFiles[] = $pathKta;
 
             // --- PROSES SURAT REKOMENDASI ---
             $pathSurat = $request->file('surat_rekomendasi')->store('verifikasi/rekomendasi', 'local');
             $uploadedFiles[] = $pathSurat;
 
-            Mahasiswa::create([
+            // <-- DIUBAH: Insert data ke tabel pemohon
+            Pemohon::create([
                 'users_id' => $user->uuid,
-                'nim' => $request->nim,
-                'ktm_path' => $pathKtm,
+                'nik_ketua' => $request->nik,
+                'nama_organisasi' => $request->nama_organisasi,
+                'kta_path' => $pathKta,
                 'surat_rekomendasi_path' => $pathSurat,
                 'status_akun' => 'pending',
             ]);
@@ -103,12 +106,15 @@ class RegisterController extends Controller
             'no_wa.regex'                => 'Nomor WhatsApp hanya boleh berisi angka.',
             'no_wa.min'                  => 'Nomor WhatsApp minimal 10 digit.',
             'alamat.required'            => 'Alamat lengkap wajib diisi.',
-            'nim.required'               => 'NIM wajib diisi.',
-            'nim.unique'                 => 'NIM ini sudah terdaftar.',
-            'ktm.required'               => 'Foto KTM wajib diunggah.',
-            'ktm.image'                  => 'File KTM harus berupa gambar.',
-            'ktm.mimes'                  => 'Format KTM harus JPG, PNG, atau JPEG.',
-            'ktm.max'                    => 'Ukuran foto KTM maksimal 5MB.',
+            'nik.required'               => 'NIK wajib diisi.',
+            'nik.size'                   => 'NIK harus terdiri dari 16 digit angka.',
+            'nik.unique'                 => 'NIK ini sudah terdaftar.',
+            'nama_organisasi.required'   => 'Nama organisasi wajib diisi.',
+            'nama_organisasi.max'        => 'Nama organisasi maksimal 255 karakter.',
+            'kta.required'               => 'Foto KTA wajib diunggah.',
+            'kta.image'                  => 'File KTA harus berupa gambar.',
+            'kta.mimes'                  => 'Format KTA harus JPG, PNG, atau JPEG.',
+            'kta.max'                    => 'Ukuran foto KTA maksimal 5MB.',
             'surat_rekomendasi.required' => 'Surat rekomendasi wajib diunggah.',
             'surat_rekomendasi.mimes'    => 'Surat rekomendasi harus berformat PDF.',
             'surat_rekomendasi.max'      => 'Ukuran file surat rekomendasi maksimal 2MB.',
