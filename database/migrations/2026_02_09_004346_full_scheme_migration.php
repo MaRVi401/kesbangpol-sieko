@@ -14,13 +14,13 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->enum('role', [
-                'super_admin', 
-                'pemohon', 
-                'petugas_verifikasi_data', 
-                'petugas_verifikasi_lapangan', 
-                'analis_kebijakan_ahli_muda', 
-                'kabid_kesbak', 
-                'sekban', 
+                'super_admin',
+                'pemohon',
+                'petugas_verifikasi_data',
+                'petugas_verifikasi_lapangan',
+                'analis_kebijakan_ahli_muda',
+                'kabid_kesbak',
+                'sekban',
                 'kaban'
             ]);
             $table->string('alamat')->nullable();
@@ -42,6 +42,8 @@ return new class extends Migration
             $table->foreignUuid('users_id')->constrained('users', 'uuid')->cascadeOnDelete();
             $table->string('nik_ketua')->nullable();
             $table->string('nama_organisasi')->nullable();
+            $table->string('kta_path')->nullable();
+            $table->string('surat_rekomendasi_path')->nullable();
             $table->enum('status_akun', ['pending', 'aktif', 'ditolak'])->default('pending');
             $table->timestamps();
         });
@@ -106,10 +108,10 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->json('payload_draft')->nullable();
             $table->enum('status', [
-                'draft', 
-                'diajukan', 
-                'pemeriksaan_kelengkapan', 
-                'data_tidak_sesuai', 
+                'draft',
+                'diajukan',
+                'pemeriksaan_kelengkapan',
+                'data_tidak_sesuai',
                 'persyaratan_lengkap',
                 'verifikasi_lapangan',
                 'pembuatan_berita_acara',
@@ -193,14 +195,14 @@ return new class extends Migration
         Schema::create('biodata_pengurus_ormas', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
             $table->foreignUuid('formulir_id')->constrained('formulir_permohonan_baru_pencatatan_ormas', 'uuid')->cascadeOnDelete();
-            $table->string('nama_lengkap'); 
+            $table->string('nama_lengkap');
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
             $table->enum('jenis_kelamin', ['Pria', 'Wanita']);
             $table->enum('status_perkawinan', ['Kawin', 'Belum Kawin', 'Janda', 'Duda']);
             $table->string('agama');
             $table->string('utusan_organisasi')->nullable();
-            $table->string('jabatan'); 
+            $table->string('jabatan');
             $table->text('alamat_organisasi')->nullable();
             $table->string('telepon_organisasi')->nullable();
             $table->text('alamat_rumah');

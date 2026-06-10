@@ -19,6 +19,8 @@ class Pemohon extends Model
         'users_id',
         'nik_ketua',
         'nama_organisasi',
+        'kta_path',
+        'surat_rekomendasi_path',
         'status_akun'
     ];
 

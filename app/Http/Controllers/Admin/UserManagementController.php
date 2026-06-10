@@ -26,6 +26,14 @@ class UserManagementController extends Controller
     {
         $query = User::query()->where('uuid', '!=', Auth::id());
 
+        // Pastikan pemohon yang muncul HANYA yang sudah aktif
+        $query->where(function($q) {
+        $q->where('role', '!=', 'pemohon')
+          ->orWhereHas('pemohon', function($subQuery) {
+              $subQuery->where('status_akun', 'aktif');
+          });
+    });
+
         // Filter logic
         if ($request->filled('role')) {
             $query->where('role', $request->role);

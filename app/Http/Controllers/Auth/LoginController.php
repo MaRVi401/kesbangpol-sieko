@@ -29,9 +29,9 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
-            // --- PENGECEKAN STATUS KHUSUS MAHASISWA ---
+            // --- PENGECEKAN STATUS KHUSUS PEMOHON ---
             if ($user->role === 'pemohon') {
-                $status = $user->mahasiswa->status_akun ?? null;
+                $status = $user->pemohon->status_akun ?? null;
 
                 if ($status !== 'aktif') {
                     Auth::logout();

@@ -22,32 +22,37 @@ class FileController extends Controller
             abort(404, 'Dokumen tidak ditemukan di server.');
         }
 
-        // 3. Ambil data user yang sedang login menggunakan Facade Auth
+    // 3. Ambil data user yang sedang login
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        // Normalisasi string role untuk menghindari gagal match karena case-sensitive/spasi
+        $userRole = trim(strtolower($user->role));
 
         // 4. Daftar Role Admin & Petugas
         $allowedRoles = [
             'super_admin',
+            'super-admin', // Tambahan variasi penulisan
             'petugas_verifikasi_data',
             'petugas_verifikasi_lapangan',
             'analis_kebijakan_ahli_muda',
             'kabid_kesbak',
             'sekban',
-            'kaban'
+            'kaban',
+            'operator' // Tambahkan jika operator juga perlu melihat lampiran
         ];
 
         // 5. Izinkan jika role termasuk admin/petugas
-        if (in_array($user->role, $allowedRoles)) {
+        if (in_array($userRole, $allowedRoles)) {
             return Storage::disk('local')->response($path);
         }
 
         // 6. Validasi jika login sebagai pemohon
-        if ($user->role === 'pemohon') {
+        if ($userRole === 'pemohon') {
             $isOwner = Pemohon::where('users_id', $user->uuid)
                 ->where(function ($query) use ($path) {
                     $query->where('kta_path', $path)
-                          ->orWhere('surat_rekomendasi_path', $path);
+                        ->orWhere('surat_rekomendasi_path', $path);
                 })
                 ->exists();
 
