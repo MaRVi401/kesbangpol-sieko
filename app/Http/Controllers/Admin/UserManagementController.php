@@ -27,12 +27,12 @@ class UserManagementController extends Controller
         $query = User::query()->where('uuid', '!=', Auth::id());
 
         // Pastikan pemohon yang muncul HANYA yang sudah aktif
-        $query->where(function($q) {
-        $q->where('role', '!=', 'pemohon')
-          ->orWhereHas('pemohon', function($subQuery) {
-              $subQuery->where('status_akun', 'aktif');
-          });
-    });
+        $query->where(function ($q) {
+            $q->where('role', '!=', 'pemohon')
+                ->orWhereHas('pemohon', function ($subQuery) {
+                    $subQuery->where('status_akun', 'aktif');
+                });
+        });
 
         // Filter logic
         if ($request->filled('role')) {
@@ -146,7 +146,6 @@ class UserManagementController extends Controller
 
             DB::commit();
             return redirect()->route('user-management.index')->with('success', 'User baru berhasil ditambahkan.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             if ($avatarPath) {
@@ -360,6 +359,43 @@ class UserManagementController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal memproses aktivasi: ' . $e->getMessage());
+        }
+    }
+
+    public function rejectedPemohon()
+    {
+        $rejectedUsers = User::where('role', 'pemohon')
+            ->whereHas('pemohon', function ($query) {
+                $query->where('status_akun', 'ditolak');
+            })
+            ->with('pemohon')
+            ->latest()
+            ->paginate(10);
+
+        return view('pages.super-admin.user-management.rejected', compact('rejectedUsers'));
+    }
+
+    public function forceDeletePemohon(string $uuid)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::findOrFail($uuid);
+            $pemohon = Pemohon::where('users_id', $uuid)->first();
+
+            // Hapus file fisik jika ada
+            if ($pemohon) {
+                if ($pemohon->kta_path) Storage::disk('local')->delete($pemohon->kta_path);
+                if ($pemohon->surat_rekomendasi_path) Storage::disk('local')->delete($pemohon->surat_rekomendasi_path);
+            }
+
+            // Hapus user (akan menghapus relasi pemohon karena cascadeOnDelete)
+            $user->delete();
+
+            DB::commit();
+            return back()->with('success', 'User dan dokumen berhasil dihapus permanen.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
         }
     }
 

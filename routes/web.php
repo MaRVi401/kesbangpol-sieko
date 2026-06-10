@@ -118,6 +118,11 @@ Route::middleware('auth')->group(function () {
             ->name('user-management.pending');
         Route::post('user-management/activate/{uuid}', [UserManagementController::class, 'activate'])
             ->name('user-management.activate');
+        Route::get('user-management/rejected-pemohon', [UserManagementController::class, 'rejectedPemohon'])
+            ->name('user-management.rejected');
+        Route::delete('user-management/force-delete/{uuid}', [UserManagementController::class, 'forceDeletePemohon'])
+            ->name('user-management.forceDelete');
+
 
         Route::resource('user-management', UserManagementController::class)
             ->names('user-management')
