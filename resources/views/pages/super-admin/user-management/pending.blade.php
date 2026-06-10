@@ -1,6 +1,6 @@
 @extends('layouts.main')
 
-@section('title', 'Aktivasi Mahasiswa')
+@section('title', 'Aktivasi Pemohon')
 
 @section('content')
     <div class="p-4 mt-14">
@@ -30,7 +30,7 @@
                         <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
-                        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-500">Aktivasi Mahasiswa</span>
+                        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-500">Aktivasi Pemohon</span>
                     </div>
                 </li>
             </ol>
@@ -39,8 +39,8 @@
 
         {{-- Title Section --}}
         <div class="mb-6">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Daftar Tunggu Aktivasi Mahasiswa</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Tinjau data diri dan dokumen pendukung mahasiswa sebelum memberikan akses sistem.</p>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Daftar Tunggu Aktivasi Pemohon</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Tinjau data diri dan dokumen pendukung pemohon sebelum memberikan akses sistem.</p>
         </div>
 
         {{-- Table Card --}}
@@ -49,8 +49,9 @@
                 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
-                            <th class="px-6 py-4 font-bold">Nama Mahasiswa</th>
-                            <th class="px-6 py-4 font-bold">NIM</th>
+                            <th class="px-6 py-4 font-bold">Nama Pemohon (Ketua)</th>
+                            <th class="px-6 py-4 font-bold">Organisasi</th>
+                            <th class="px-6 py-4 font-bold">NIK</th>
                             <th class="px-6 py-4 font-bold text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -58,7 +59,8 @@
                         @forelse($pendingUsers as $user)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                 <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $user->nama }}</td>
-                                <td class="px-6 py-4">{{ $user->mahasiswa->nim }}</td>
+                                <td class="px-6 py-4">{{ $user->pemohon->nama_organisasi ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $user->pemohon->nik_ketua }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <button data-modal-target="modal-{{ $user->uuid }}" data-modal-toggle="modal-{{ $user->uuid }}"
                                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-xs px-4 py-2 transition-all">
@@ -66,7 +68,7 @@
                                     </button>
 
                                     {{-- Modal Preview --}}
-                                    <div id="modal-{{ $user->uuid }}" tabindex="-1" aria-hidden="true" 
+                                    <div id="modal-{{ $user->uuid }}" tabindex="-1" aria-hidden="true"
                                         class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                                         <div class="relative p-4 w-full max-w-2xl max-h-full text-left">
                                             <div class="relative bg-white rounded-xl shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -79,24 +81,28 @@
                                                 <div class="p-6 space-y-6">
                                                     <div class="grid grid-cols-2 gap-4">
                                                         <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                                                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">NIM</p>
-                                                            <p class="text-sm text-gray-900 dark:text-white">{{ $user->mahasiswa->nim }}</p>
+                                                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">NIK Ketua</p>
+                                                            <p class="text-sm text-gray-900 dark:text-white">{{ $user->pemohon->nik_ketua }}</p>
                                                         </div>
                                                         <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                                                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Nama Organisasi</p>
+                                                            <p class="text-sm text-gray-900 dark:text-white">{{ $user->pemohon->nama_organisasi ?? '-' }}</p>
+                                                        </div>
+                                                        <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg col-span-2">
                                                             <p class="text-xs text-gray-500 uppercase font-bold mb-1">WhatsApp</p>
                                                             <p class="text-sm text-gray-900 dark:text-white">{{ $user->no_wa ?? '-' }}</p>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div class="space-y-3">
-                                                        <p class="text-sm font-bold text-gray-900 dark:text-white">Preview KTM:</p>
-                                                        <img src="{{ url('storage/private/' . $user->mahasiswa->ktm_path) }}" 
+                                                        <p class="text-sm font-bold text-gray-900 dark:text-white">Preview KTP Ketua:</p>
+                                                        <img src="{{ url('storage/private/' . $user->pemohon->kta_path) }}"
                                                              class="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
-                                                             alt="KTM Preview">
-                                                        
+                                                             alt="KTP Preview">
+
                                                         <div class="pt-2">
                                                             <p class="text-sm font-bold text-gray-900 dark:text-white mb-2">Dokumen Pendukung:</p>
-                                                            <a href="{{ url('storage/private/' . $user->mahasiswa->surat_rekomendasi_path) }}" target="_blank"
+                                                            <a href="{{ url('storage/private/' . $user->pemohon->surat_rekomendasi_path) }}" target="_blank"
                                                                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 transition-all">
                                                                 <svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                                                 Lihat Surat Rekomendasi
@@ -123,10 +129,10 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-6 py-10 text-center">
+                                <td colspan="4" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <p class="text-gray-500 dark:text-gray-400">Tidak ada mahasiswa yang menunggu aktivasi.</p>
+                                        <p class="text-gray-500 dark:text-gray-400">Tidak ada pemohon yang menunggu aktivasi.</p>
                                     </div>
                                 </td>
                             </tr>

@@ -78,11 +78,11 @@ Route::middleware('auth')->group(function () {
 
     // Rute untuk akses file di storage private
     Route::get('/storage/private/{path}', [FileController::class, 'show'])
-    ->where('path', '.*')
-    ->middleware('auth')
-    ->name('file.show');
+        ->where('path', '.*')
+        ->middleware('auth')
+        ->name('file.show');
 
-        // Edit profile
+    // Edit profile
 
     // Route untuk halaman profil
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -114,6 +114,11 @@ Route::middleware('auth')->group(function () {
     |----------------------------------------------------------------------
     */
     Route::middleware('can:super-admin-only')->group(function () {
+        Route::get('user-management/pending-pemohon', [UserManagementController::class, 'pendingPemohon'])
+            ->name('user-management.pending');
+        Route::post('user-management/activate/{uuid}', [UserManagementController::class, 'activate'])
+            ->name('user-management.activate');
+
         Route::resource('user-management', UserManagementController::class)
             ->names('user-management')
             ->parameters(['user-management' => 'user']);
@@ -123,11 +128,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/security-logs', 'securityLogs')->name('security-logs');
             Route::get('/audit-trails', 'auditTrails')->name('audit-trails');
         });
-
-         Route::get('user-management/pending-mahasiswa', [UserManagementController::class, 'pendingMahasiswa'])
-            ->name('user-management.pending');
-        Route::post('user-management/activate/{uuid}', [UserManagementController::class, 'activate'])
-            ->name('user-management.activate');
     });
 
     // 2. Pemohon
@@ -140,25 +140,24 @@ Route::middleware('auth')->group(function () {
         Route::get('/history/{uuid}', [ServiceHistoryTicketController::class, 'show'])->name('history.show');
 
         Route::delete('/history/{uuid}', [ServiceHistoryTicketController::class, 'destroy'])->name('history.destroy');
-        
     });
 
-   // 3. Petugas Verifikasi Data
+    // 3. Petugas Verifikasi Data
     Route::middleware('can:petugas_verifikasi_data')->prefix('verifikator-data')->name('verif_data.')->group(function () {
         Route::controller(\App\Http\Controllers\PetugasVerifikasiData\TicketController::class)->name('ticket.')->group(function () {
             Route::get('/tiket-masuk', 'index')->name('index');
             Route::post('/tiket/{uuid}/handle', 'handle')->name('handle');
-            
+
             Route::get('/meja-kerja', 'workDesk')->name('workdesk');
             Route::put('/tiket/{uuid}', 'update')->name('update');
             Route::get('/tiket/{uuid}/detail', 'show')->name('show');
-            
+
             Route::get('/riwayat', 'history')->name('history');
-            
-           
-            Route::get('/revisi', 'revisi')->name('revisi'); 
-            
-            
+
+
+            Route::get('/revisi', 'revisi')->name('revisi');
+
+
             Route::get('/tiket/{uuid}/preview-pdf', 'previewPdf')->name('preview-pdf');
             Route::get('/tiket/{uuid}/download-docx', 'downloadDocx')->name('download-docx');
         });
@@ -168,35 +167,27 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:petugas_verifikasi_lapangan')->prefix('verifikator-lapangan')->name('verif_lapangan.')->group(function () {
         Route::controller(\App\Http\Controllers\PetugasVerifikasiLapangan\TicketController::class)->name('ticket.')->group(function () {
             Route::get('/antrean', 'index')->name('index');
-            
-            
-            Route::get('/meja-kerja', 'workdesk')->name('workdesk'); 
-            
+
+
+            Route::get('/meja-kerja', 'workdesk')->name('workdesk');
+
             Route::get('/riwayat', 'history')->name('history');
-            
+
             Route::get('/tiket/{uuid}/mulai', 'mulaiVerifikasi')->name('mulai');
             Route::get('/tiket/{uuid}/berita-acara', 'lihatBeritaAcara')->name('berita-acara');
         });
     });
 
     // 5. Analis Kebijakan Ahli Muda
-    Route::middleware('can:analis_kebijakan_ahli_muda')->prefix('analis')->name('analis.')->group(function () {
-        
-    });
+    Route::middleware('can:analis_kebijakan_ahli_muda')->prefix('analis')->name('analis.')->group(function () {});
 
     // 6. Kabid Kesbak
-    Route::middleware('can:kabid_kesbak')->prefix('kabid')->name('kabid.')->group(function () {
-       
-    });
+    Route::middleware('can:kabid_kesbak')->prefix('kabid')->name('kabid.')->group(function () {});
 
     // 7. Sekban
-    Route::middleware('can:sekban')->prefix('sekban')->name('sekban.')->group(function () {
-        
-    });
+    Route::middleware('can:sekban')->prefix('sekban')->name('sekban.')->group(function () {});
 
 
     // 8. Kaban
-    Route::middleware('can:kaban')->prefix('kaban')->name('kaban.')->group(function () {
-        
-    });
+    Route::middleware('can:kaban')->prefix('kaban')->name('kaban.')->group(function () {});
 });

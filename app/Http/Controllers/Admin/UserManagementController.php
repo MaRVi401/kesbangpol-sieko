@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
 use App\Models\JejakAudit;
-use App\Models\Mahasiswa;
+use App\Models\Pemohon;
 
 class UserManagementController extends Controller
 {
@@ -67,7 +67,7 @@ class UserManagementController extends Controller
     {
         return view('pages.super-admin.user-management.create');
     }
-    
+
     /**
      * Store a newly created user.
      */
@@ -303,21 +303,22 @@ class UserManagementController extends Controller
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
-    public function pendingMahasiswa()
+    // GANTI NAMA FUNGSI DAN RELASINYA
+    public function pendingPemohon()
     {
-        // Mengambil user dengan role mahasiswa yang status_akun-nya 'pending'
-        $pendingUsers = User::where('role', 'mahasiswa')
-            ->whereHas('mahasiswa', function ($query) {
+        // Mengambil user dengan role pemohon yang status_akun-nya 'pending'
+        $pendingUsers = User::where('role', 'pemohon')
+            ->whereHas('pemohon', function ($query) {
                 $query->where('status_akun', 'pending');
             })
-            ->with('mahasiswa')
+            ->with('pemohon')
             ->latest()
             ->paginate(10);
 
         return view('pages.super-admin.user-management.pending', compact('pendingUsers'));
     }
 
-    // Metode untuk mengaktifkan atau menolak akun mahasiswa
+    // Metode untuk mengaktifkan atau menolak akun pemohon
     public function activate(Request $request, string $uuid)
     {
         $request->validate([
@@ -326,10 +327,11 @@ class UserManagementController extends Controller
 
         DB::beginTransaction();
         try {
-            $mahasiswa = Mahasiswa::where('users_id', $uuid)->firstOrFail();
-            $statusLama = $mahasiswa->status_akun;
+            // DIUBAH: Pencarian ke model Pemohon
+            $pemohon = Pemohon::where('users_id', $uuid)->firstOrFail();
+            $statusLama = $pemohon->status_akun;
 
-            $mahasiswa->update([
+            $pemohon->update([
                 'status_akun' => $request->status
             ]);
 
@@ -337,8 +339,8 @@ class UserManagementController extends Controller
             JejakAudit::create([
                 'users_id' => Auth::id(),
                 'aksi' => 'update',
-                'nama_tabel' => 'mahasiswa',
-                'record_id' => $mahasiswa->uuid,
+                'nama_tabel' => 'pemohon', // DIUBAH: Nama tabel menjadi pemohon
+                'record_id' => $pemohon->uuid,
                 'data_lama' => ['status_akun' => $statusLama],
                 'data_baru' => ['status_akun' => $request->status],
                 'ip_address' => request()->ip()
@@ -362,7 +364,7 @@ class UserManagementController extends Controller
             'super_admin'  => SuperAdmin::class,
             'kabid'        => Kabid::class,
             'operator'     => Operator::class,
-            'mahasiswa'    => Mahasiswa::class,
+            'pemohon'    => Pemohon::class,
         ][$role];
     }
 
