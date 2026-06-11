@@ -34,6 +34,9 @@ class UserManagementController extends Controller
         'kaban'
     ];
 
+    /**
+     * Display a listing of the users with Search & Pagination.
+     */
     public function index(Request $request)
     {
         $query = User::query()->where('uuid', '!=', Auth::id());
@@ -72,11 +75,17 @@ class UserManagementController extends Controller
         return view('pages.super-admin.user-management.index', compact('users'));
     }
 
+    /**
+     * Show the form for creating a new user.
+     */
     public function create()
     {
         return view('pages.super-admin.user-management.create');
     }
 
+    /**
+     * Store a newly created user.
+     */
     public function store(Request $request)
     {
         $allRoles = array_merge($this->nipRoles, ['pemohon']);
@@ -156,6 +165,9 @@ class UserManagementController extends Controller
         }
     }
 
+    /**
+     * Show the form for editing the specified user.
+     */
     public function edit(User $user)
     {
         $nip = '';
@@ -171,6 +183,9 @@ class UserManagementController extends Controller
         return view('pages.super-admin.user-management.edit', compact('user', 'nip', 'nik'));
     }
 
+    /**
+     * Update user data.
+     */
     public function update(Request $request, User $user)
     {
         $allRoles = array_merge($this->nipRoles, ['pemohon']);
@@ -237,7 +252,7 @@ class UserManagementController extends Controller
                 }
 
                 $roleModel::create($newData);
-            } else {
+            } {
                 if (in_array($request->role, $this->nipRoles)) {
                     $roleModel::where('users_id', $user->uuid)->update([
                         'nip' => $request->nip
@@ -267,6 +282,9 @@ class UserManagementController extends Controller
         }
     }
 
+    /**
+     * Remove user and clean physical storage.
+     */
     public function destroy(User $user)
     {
         if ($user->uuid === Auth::id()) {
@@ -302,8 +320,113 @@ class UserManagementController extends Controller
         }
     }
 
-    //... Fungsi lainnya (pendingPemohon, activate, rejectedPemohon, forceDeletePemohon) biarkan sama ...
+    /**
+     * Menampilkan daftar pemohon yang berstatus 'pending'.
+     */
+    public function pendingPemohon()
+    {
+        $pendingUsers = User::where('role', 'pemohon')
+            ->whereHas('pemohon', function ($query) {
+                $query->where('status_akun', 'pending');
+            })
+            ->with('pemohon')
+            ->latest()
+            ->paginate(10);
 
+        return view('pages.super-admin.user-management.pending', compact('pendingUsers'));
+    }
+
+    /**
+     * Menyetujui (aktif) atau menolak akun pemohon yang mendaftar.
+     */
+    public function activate(Request $request, string $uuid)
+    {
+        $request->validate([
+            'status' => 'required|in:aktif,ditolak'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pemohon = Pemohon::where('users_id', $uuid)->firstOrFail();
+            $statusLama = $pemohon->status_akun;
+
+            $pemohon->update([
+                'status_akun' => $request->status
+            ]);
+
+            JejakAudit::create([
+                'users_id' => Auth::id(),
+                'aksi' => 'update',
+                'nama_tabel' => 'pemohon',
+                'record_id' => $pemohon->uuid,
+                'data_lama' => ['status_akun' => $statusLama],
+                'data_baru' => ['status_akun' => $request->status],
+                'ip_address' => request()->ip()
+            ]);
+
+            DB::commit();
+            $msg = $request->status == 'aktif' ? 'Akun berhasil diaktifkan.' : 'Akun telah ditolak.';
+            return back()->with('success', $msg);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memproses aktivasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menampilkan daftar pemohon yang pendaftarannya ditolak.
+     */
+    public function rejectedPemohon()
+    {
+        $rejectedUsers = User::where('role', 'pemohon')
+            ->whereHas('pemohon', function ($query) {
+                $query->where('status_akun', 'ditolak');
+            })
+            ->with('pemohon')
+            ->latest()
+            ->paginate(10);
+
+        return view('pages.super-admin.user-management.rejected', compact('rejectedUsers'));
+    }
+
+    /**
+     * Hapus permanen user pemohon beserta berkas fisik yang pernah diunggah.
+     */
+    public function forceDeletePemohon(string $uuid)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::findOrFail($uuid);
+            $pemohon = Pemohon::where('users_id', $uuid)->first();
+
+            if ($pemohon) {
+                if ($pemohon->kta_path) Storage::disk('local')->delete($pemohon->kta_path);
+                if ($pemohon->surat_rekomendasi_path) Storage::disk('local')->delete($pemohon->surat_rekomendasi_path);
+            }
+
+            // Mencatat jejak audit sebelum data dihapus cascade
+            JejakAudit::create([
+                'users_id' => Auth::id(),
+                'aksi' => 'delete',
+                'nama_tabel' => 'users',
+                'record_id' => $user->uuid,
+                'data_lama' => $user->toArray(),
+                'ip_address' => request()->ip()
+            ]);
+
+            $user->delete();
+
+            DB::commit();
+            return back()->with('success', 'User dan dokumen berhasil dihapus permanen.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper to get Role Model class.
+     */
     private function getRoleModel(string $role)
     {
         return [
@@ -315,9 +438,12 @@ class UserManagementController extends Controller
             'kabid_kesbak'                => KabidKesbak::class,
             'sekban'                      => Sekban::class,
             'kaban'                       => Kaban::class,
-        ][$role];
+        ][$role] ?? null;
     }
 
+    /**
+     * Custom validation messages.
+     */
     private function customMessages()
     {
         return [
