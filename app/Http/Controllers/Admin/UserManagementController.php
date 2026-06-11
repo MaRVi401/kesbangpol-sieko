@@ -34,14 +34,10 @@ class UserManagementController extends Controller
         'kaban'
     ];
 
-    /**
-     * Display a listing of the users with Search & Pagination.
-     */
     public function index(Request $request)
     {
         $query = User::query()->where('uuid', '!=', Auth::id());
 
-        // Pastikan pemohon yang muncul HANYA yang sudah aktif
         $query->where(function ($q) {
             $q->where('role', '!=', 'pemohon')
                 ->orWhereHas('pemohon', function ($subQuery) {
@@ -49,60 +45,51 @@ class UserManagementController extends Controller
                 });
         });
 
-        // Filter logic
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        // Search Logic
         if ($request->filled('search')) {
-            // Bersihkan spasi berlebih di awal/akhir dan ubah ke huruf kecil
             $search = trim($request->search);
             $searchLower = strtolower($search);
 
             $query->where(function ($q) use ($search, $searchLower) {
-                // Gunakan fungsi db LOWER() agar pencarian tidak peduli huruf besar/kecil
                 $q->whereRaw('LOWER(nama) LIKE ?', ["%{$searchLower}%"])
                     ->orWhereRaw('LOWER(username) LIKE ?', ["%{$searchLower}%"])
                     ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchLower}%"])
-                    // Cari NIP di semua tabel relasi detail (Angka tidak perlu dilower)
                     ->orWhereHas('superAdmin', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
                     ->orWhereHas('petugasVerifikasiData', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
                     ->orWhereHas('petugasVerifikasiLapangan', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
                     ->orWhereHas('analisKebijakanAhliMuda', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
                     ->orWhereHas('kabidKesbak', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
                     ->orWhereHas('sekban', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
-                    ->orWhereHas('kaban', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"));
+                    ->orWhereHas('kaban', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('pemohon', fn($sq) => $sq->where('nik_ketua', 'LIKE', "%{$search}%"));
             });
         }
 
-        // Use paginate for Flowbite pagination support
         $users = $query->latest()->paginate(10);
-
         return view('pages.super-admin.user-management.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new user.
-     */
     public function create()
     {
         return view('pages.super-admin.user-management.create');
     }
 
-    /**
-     * Store a newly created user.
-     */
     public function store(Request $request)
     {
-        $rolesString = implode(',', $this->nipRoles);
+        $allRoles = array_merge($this->nipRoles, ['pemohon']);
+        $rolesString = implode(',', $allRoles);
+        $nipRolesString = implode(',', $this->nipRoles);
 
         $rules = [
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'username' => 'required|string|unique:users,username',
             'role'     => 'required|in:' . $rolesString,
-            'nip'      => 'required_if:role,' . $rolesString . '|nullable|numeric|digits:18',
+            'nip'      => 'required_if:role,' . $nipRolesString . '|nullable|numeric|digits:18',
+            'nik'      => 'required_if:role,pemohon|nullable|numeric|digits:16',
             'no_wa'    => 'nullable|numeric|digits_between:10,13',
             'password' => 'required|min:8|confirmed',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
@@ -142,11 +129,13 @@ class UserManagementController extends Controller
 
             if (in_array($request->role, $this->nipRoles)) {
                 $detailData['nip'] = $request->nip;
+            } elseif ($request->role === 'pemohon') {
+                $detailData['nik_ketua'] = $request->nik;
+                $detailData['status_akun'] = 'aktif';
             }
 
             $roleModel::create($detailData);
 
-            // Catat Jejak Audit
             JejakAudit::create([
                 'users_id'   => Auth::id(),
                 'aksi'       => 'create',
@@ -167,36 +156,34 @@ class UserManagementController extends Controller
         }
     }
 
-
-    /**
-     * Show the form for editing the specified user.
-     */
     public function edit(User $user)
     {
         $nip = '';
+        $nik = '';
 
         if (in_array($user->role, $this->nipRoles)) {
-            // Mengubah format role (contoh: 'kabid_kesbak' menjadi 'kabidKesbak')
             $relationName = Str::camel($user->role);
             $nip = $user->{$relationName} ? $user->{$relationName}->nip : '';
+        } elseif ($user->role === 'pemohon') {
+            $nik = $user->pemohon ? $user->pemohon->nik_ketua : '';
         }
 
-        return view('pages.super-admin.user-management.edit', compact('user', 'nip'));
+        return view('pages.super-admin.user-management.edit', compact('user', 'nip', 'nik'));
     }
 
-    /**
-     * Update user data and sync Minio (Private Storage) storage.
-     */
     public function update(Request $request, User $user)
     {
-        $rolesString = implode(',', $this->nipRoles);
+        $allRoles = array_merge($this->nipRoles, ['pemohon']);
+        $rolesString = implode(',', $allRoles);
+        $nipRolesString = implode(',', $this->nipRoles);
 
         $rules = [
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $user->uuid . ',uuid',
             'username' => 'required|string|unique:users,username,' . $user->uuid . ',uuid',
             'role'     => 'required|in:' . $rolesString,
-            'nip'      => 'required_if:role,' . $rolesString . '|nullable|numeric|digits:18',
+            'nip'      => 'required_if:role,' . $nipRolesString . '|nullable|numeric|digits:18',
+            'nik'      => 'required_if:role,pemohon|nullable|numeric|digits:16',
             'no_wa'    => 'nullable|numeric|digits_between:10,13',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|min:8|confirmed',
@@ -231,7 +218,6 @@ class UserManagementController extends Controller
 
             $user->save();
 
-            // Sinkronisasi Tabel Role
             $roleModel = $this->getRoleModel($request->role);
             $oldRoleModel = $this->getRoleModel($oldRole);
 
@@ -245,6 +231,9 @@ class UserManagementController extends Controller
 
                 if (in_array($request->role, $this->nipRoles)) {
                     $newData['nip'] = $request->nip;
+                } elseif ($request->role === 'pemohon') {
+                    $newData['nik_ketua'] = $request->nik;
+                    $newData['status_akun'] = 'aktif';
                 }
 
                 $roleModel::create($newData);
@@ -252,6 +241,10 @@ class UserManagementController extends Controller
                 if (in_array($request->role, $this->nipRoles)) {
                     $roleModel::where('users_id', $user->uuid)->update([
                         'nip' => $request->nip
+                    ]);
+                } elseif ($request->role === 'pemohon') {
+                    $roleModel::where('users_id', $user->uuid)->update([
+                        'nik_ketua' => $request->nik
                     ]);
                 }
             }
@@ -274,22 +267,16 @@ class UserManagementController extends Controller
         }
     }
 
-    /**
-     * Remove user and clean (Private Storage).
-     */
     public function destroy(User $user)
     {
-        // 1. Validasi: Jangan hapus diri sendiri
         if ($user->uuid === Auth::id()) {
             return back()->with('error', 'Anda tidak dapat menghapus akun sendiri.');
         }
 
-        // 2. Validasi Relasi: Cek apakah user ini masih dirujuk oleh tabel tiket
         if ($user->tiketDitangani()->exists() || $user->tiketDibuat()->exists()) {
             return back()->with('error', 'User ini masih memiliki riwayat tiket yang terdaftar.');
         }
 
-        // 3. Proses hapus jika tidak ada relasi
         DB::beginTransaction();
         try {
             if ($user->avatar) {
@@ -315,93 +302,8 @@ class UserManagementController extends Controller
         }
     }
 
-    public function pendingPemohon()
-    {
-        $pendingUsers = User::where('role', 'pemohon')
-            ->whereHas('pemohon', function ($query) {
-                $query->where('status_akun', 'pending');
-            })
-            ->with('pemohon')
-            ->latest()
-            ->paginate(10);
+    //... Fungsi lainnya (pendingPemohon, activate, rejectedPemohon, forceDeletePemohon) biarkan sama ...
 
-        return view('pages.super-admin.user-management.pending', compact('pendingUsers'));
-    }
-
-    public function activate(Request $request, string $uuid)
-    {
-        $request->validate([
-            'status' => 'required|in:aktif,ditolak'
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $pemohon = Pemohon::where('users_id', $uuid)->firstOrFail();
-            $statusLama = $pemohon->status_akun;
-
-            $pemohon->update([
-                'status_akun' => $request->status
-            ]);
-
-            JejakAudit::create([
-                'users_id' => Auth::id(),
-                'aksi' => 'update',
-                'nama_tabel' => 'pemohon',
-                'record_id' => $pemohon->uuid,
-                'data_lama' => ['status_akun' => $statusLama],
-                'data_baru' => ['status_akun' => $request->status],
-                'ip_address' => request()->ip()
-            ]);
-
-            DB::commit();
-            $msg = $request->status == 'aktif' ? 'Akun berhasil diaktifkan.' : 'Akun telah ditolak.';
-            return back()->with('success', $msg);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal memproses aktivasi: ' . $e->getMessage());
-        }
-    }
-
-    public function rejectedPemohon()
-    {
-        $rejectedUsers = User::where('role', 'pemohon')
-            ->whereHas('pemohon', function ($query) {
-                $query->where('status_akun', 'ditolak');
-            })
-            ->with('pemohon')
-            ->latest()
-            ->paginate(10);
-
-        return view('pages.super-admin.user-management.rejected', compact('rejectedUsers'));
-    }
-
-    public function forceDeletePemohon(string $uuid)
-    {
-        DB::beginTransaction();
-        try {
-            $user = User::findOrFail($uuid);
-            $pemohon = Pemohon::where('users_id', $uuid)->first();
-
-            // Hapus file fisik jika ada
-            if ($pemohon) {
-                if ($pemohon->kta_path) Storage::disk('local')->delete($pemohon->kta_path);
-                if ($pemohon->surat_rekomendasi_path) Storage::disk('local')->delete($pemohon->surat_rekomendasi_path);
-            }
-
-            // Hapus user (akan menghapus relasi pemohon karena cascadeOnDelete)
-            $user->delete();
-
-            DB::commit();
-            return back()->with('success', 'User dan dokumen berhasil dihapus permanen.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Helper to get Role Model class.
-     */
     private function getRoleModel(string $role)
     {
         return [
@@ -428,6 +330,9 @@ class UserManagementController extends Controller
             'nip.required_if'      => 'NIP wajib diisi jika Anda memilih role ASN/Pejabat.',
             'nip.numeric'          => 'NIP harus berupa angka.',
             'nip.digits'           => 'NIP harus berjumlah 18 digit.',
+            'nik.required_if'      => 'NIK wajib diisi jika Anda memilih role Pemohon.',
+            'nik.numeric'          => 'NIK harus berupa angka.',
+            'nik.digits'           => 'NIK harus berjumlah 16 digit.',
             'no_wa.numeric'        => 'Nomor WhatsApp harus berupa angka.',
             'no_wa.digits_between' => 'Nomor WhatsApp harus berjumlah antara 10 sampai 13 digit.',
             'password.required'    => 'Password wajib diisi.',

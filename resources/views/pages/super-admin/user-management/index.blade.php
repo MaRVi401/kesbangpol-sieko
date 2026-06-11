@@ -164,7 +164,7 @@
                                     @php $roleRel = Str::camel($user->role); @endphp
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         @if ($user->$roleRel)
-                                            {{ $user->role === 'pemohon' ? ($user->$roleRel->nik ?? '-') : ($user->$roleRel->nip ?? '-') }}
+                                            {{ $user->role === 'pemohon' ? ($user->$roleRel->nik_ketua ?? '-') : ($user->$roleRel->nip ?? '-') }}
                                         @else
                                             -
                                         @endif

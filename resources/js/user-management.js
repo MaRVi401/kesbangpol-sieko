@@ -129,25 +129,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+   // ... kode sweetalert/chart.js yang sudah ada sebelumnya
+
     const roleSelect = document.getElementById('role_select');
     const nipGroup = document.getElementById('nip_group');
-    const nimGroup = document.getElementById('nim_group');
+    const nikGroup = document.getElementById('nik_group');
 
-    if (roleSelect && nipGroup && nimGroup) {
+    if (roleSelect) {
         function toggleInputs() {
             const role = roleSelect.value;
+            const nipRoles = [
+                'super_admin', 'petugas_verifikasi_data', 'petugas_verifikasi_lapangan',
+                'analis_kebijakan_ahli_muda', 'kabid_kesbak', 'sekban', 'kaban'
+            ];
 
-            nipGroup.classList.add('hidden');
-            nimGroup.classList.add('hidden');
+            if (nipGroup) nipGroup.classList.add('hidden');
+            if (nikGroup) nikGroup.classList.add('hidden');
 
-            if (role === 'kabid' || role === 'operator' || role === 'super_admin') {
-                nipGroup.classList.remove('hidden');
-            } else if (role === 'mahasiswa') {
-                nimGroup.classList.remove('hidden');
+            if (nipRoles.includes(role)) {
+                if (nipGroup) nipGroup.classList.remove('hidden');
+            } else if (role === 'pemohon') {
+                if (nikGroup) nikGroup.classList.remove('hidden');
             }
         }
 
+        // Panggil saat inisialisasi agar state input sesuai dengan pilihan role saat edit/create
         toggleInputs();
+
+        // Panggil saat pilihan role diubah
         roleSelect.addEventListener('change', toggleInputs);
     }
 });

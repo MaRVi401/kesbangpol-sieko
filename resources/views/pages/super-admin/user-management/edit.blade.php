@@ -84,9 +84,9 @@
                         @enderror
                     </div>
 
-                    {{-- Container NIP (Hanya tampil untuk Kabid/Operator) --}}
+                    {{-- Container NIP (Hanya tampil untuk Role ASN/Pejabat) --}}
                     <div id="nip_group"
-                        class="{{ in_array($user->role, ['kabid', 'operator', 'super_admin']) ? '' : 'hidden' }}">
+                        class="{{ in_array($user->role, ['super_admin', 'petugas_verifikasi_data', 'petugas_verifikasi_lapangan', 'analis_kebijakan_ahli_muda', 'kabid_kesbak', 'sekban', 'kaban']) ? '' : 'hidden' }}">
                         <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">NIP</label>
                         <input type="text" name="nip" id="nip" value="{{ old('nip', $nip ?? '') }}"
                             maxlength="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
@@ -97,13 +97,13 @@
                         @enderror
                     </div>
 
-                    {{-- Container NIM (Hanya tampil untuk Mahasiswa) --}}
-                    <div id="nim_group" class="{{ $user->role == 'mahasiswa' ? '' : 'hidden' }}">
-                        <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">NIM</label>
-                        <input type="text" name="nim" id="nim" value="{{ old('nim', $nim ?? '') }}"
-                            maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="2305001"
-                            class="bg-gray-50 border {{ $errors->has('nim') ? 'border-red-500' : 'border-gray-300' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white">
-                        @error('nim')
+                    {{-- Container NIK (Hanya tampil untuk Pemohon) --}}
+                    <div id="nik_group" class="{{ $user->role == 'pemohon' ? '' : 'hidden' }}">
+                        <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">NIK</label>
+                        <input type="text" name="nik" id="nik" value="{{ old('nik', $nik ?? '') }}"
+                            maxlength="16" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="3212000000000001"
+                            class="bg-gray-50 border {{ $errors->has('nik') ? 'border-red-500' : 'border-gray-300' }} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:text-white">
+                        @error('nik')
                             <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
@@ -113,12 +113,14 @@
                         <label class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">Role</label>
                         <select name="role" id="role_select"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <option value="super_admin" {{ $user->role == 'super_admin' ? 'selected' : '' }}>Super Admin
-                            </option>
-                            <option value="mahasiswa" {{ $user->role == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa
-                            </option>
-                            <option value="kabid" {{ $user->role == 'kabid' ? 'selected' : '' }}>Kabid</option>
-                            <option value="operator" {{ $user->role == 'operator' ? 'selected' : '' }}>Operator</option>
+                            <option value="super_admin" {{ $user->role == 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                            <option value="pemohon" {{ $user->role == 'pemohon' ? 'selected' : '' }}>Pemohon</option>
+                            <option value="petugas_verifikasi_data" {{ $user->role == 'petugas_verifikasi_data' ? 'selected' : '' }}>Petugas Verifikasi Data</option>
+                            <option value="petugas_verifikasi_lapangan" {{ $user->role == 'petugas_verifikasi_lapangan' ? 'selected' : '' }}>Petugas Verifikasi Lapangan</option>
+                            <option value="analis_kebijakan_ahli_muda" {{ $user->role == 'analis_kebijakan_ahli_muda' ? 'selected' : '' }}>Analis Kebijakan Ahli Muda</option>
+                            <option value="kabid_kesbak" {{ $user->role == 'kabid_kesbak' ? 'selected' : '' }}>Kabid Kesbak</option>
+                            <option value="sekban" {{ $user->role == 'sekban' ? 'selected' : '' }}>Sekban</option>
+                            <option value="kaban" {{ $user->role == 'kaban' ? 'selected' : '' }}>Kaban</option>
                         </select>
                     </div>
 
