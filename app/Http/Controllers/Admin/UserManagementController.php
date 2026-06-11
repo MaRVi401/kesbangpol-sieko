@@ -5,8 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\SuperAdmin;
-use App\Models\Kabid;
-use App\Models\Operator;
+use App\Models\Pemohon;
+use App\Models\PetugasVerifikasiData;
+use App\Models\PetugasVerifikasiLapangan;
+use App\Models\AnalisKebijakanAhliMuda;
+use App\Models\KabidKesbak;
+use App\Models\Sekban;
+use App\Models\Kaban;
+use App\Models\JejakAudit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -14,11 +20,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
-use App\Models\JejakAudit;
-use App\Models\Pemohon;
 
 class UserManagementController extends Controller
 {
+    // Kumpulan Role Pejabat/ASN yang membutuhkan NIP
+    private array $nipRoles = [
+        'super_admin',
+        'petugas_verifikasi_data',
+        'petugas_verifikasi_lapangan',
+        'analis_kebijakan_ahli_muda',
+        'kabid_kesbak',
+        'sekban',
+        'kaban'
+    ];
+
     /**
      * Display a listing of the users with Search & Pagination.
      */
@@ -40,25 +55,24 @@ class UserManagementController extends Controller
         }
 
         // Search Logic
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nama', 'LIKE', "%{$search}%")
-                    ->orWhere('username', 'LIKE', "%{$search}%")
-                    ->orWhere('email', 'LIKE', "%{$search}%")
-                    // Cari di tabel relasi detail (NIP)
-                    ->orWhereHas('superAdmin', function ($sq) use ($search) {
-                        $sq->where('nip', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('mahasiswa', function ($sq) use ($search) {
-                        $sq->where('nip', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('kabid', function ($sq) use ($search) {
-                        $sq->where('nip', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('operator', function ($sq) use ($search) {
-                        $sq->where('nip', 'LIKE', "%{$search}%");
-                    });
+        if ($request->filled('search')) {
+            // Bersihkan spasi berlebih di awal/akhir dan ubah ke huruf kecil
+            $search = trim($request->search);
+            $searchLower = strtolower($search);
+
+            $query->where(function ($q) use ($search, $searchLower) {
+                // Gunakan fungsi db LOWER() agar pencarian tidak peduli huruf besar/kecil
+                $q->whereRaw('LOWER(nama) LIKE ?', ["%{$searchLower}%"])
+                    ->orWhereRaw('LOWER(username) LIKE ?', ["%{$searchLower}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchLower}%"])
+                    // Cari NIP di semua tabel relasi detail (Angka tidak perlu dilower)
+                    ->orWhereHas('superAdmin', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('petugasVerifikasiData', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('petugasVerifikasiLapangan', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('analisKebijakanAhliMuda', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('kabidKesbak', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('sekban', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('kaban', fn($sq) => $sq->where('nip', 'LIKE', "%{$search}%"));
             });
         }
 
@@ -81,13 +95,14 @@ class UserManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $rolesString = implode(',', $this->nipRoles);
+
         $rules = [
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'username' => 'required|string|unique:users,username',
-            'role'     => 'required|in:super_admin,mahasiswa,kabid,operator',
-            'nip'      => 'required_if:role,kabid,operator,super_admin|nullable|numeric|digits:18',
-            'nim'      => 'required_if:role,mahasiswa|nullable|numeric|digits:10',
+            'role'     => 'required|in:' . $rolesString,
+            'nip'      => 'required_if:role,' . $rolesString . '|nullable|numeric|digits:18',
             'no_wa'    => 'nullable|numeric|digits_between:10,13',
             'password' => 'required|min:8|confirmed',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
@@ -125,16 +140,13 @@ class UserManagementController extends Controller
                 'users_id' => $user->uuid,
             ];
 
-            if ($request->role === 'mahasiswa') {
-                $detailData['nim'] = $request->nim;
-                $detailData['status_akun'] = 'aktif';
-            } else {
+            if (in_array($request->role, $this->nipRoles)) {
                 $detailData['nip'] = $request->nip;
             }
 
             $roleModel::create($detailData);
 
-            // 3. Catat Jejak Audit
+            // Catat Jejak Audit
             JejakAudit::create([
                 'users_id'   => Auth::id(),
                 'aksi'       => 'create',
@@ -162,15 +174,14 @@ class UserManagementController extends Controller
     public function edit(User $user)
     {
         $nip = '';
-        $nim = '';
 
-        if (in_array($user->role, ['kabid', 'operator', 'super_admin'])) {
-            $nip = $user->{$user->role} ? $user->{$user->role}->nip : '';
-        } elseif ($user->role === 'mahasiswa') {
-            $nim = $user->mahasiswa ? $user->mahasiswa->nim : '';
+        if (in_array($user->role, $this->nipRoles)) {
+            // Mengubah format role (contoh: 'kabid_kesbak' menjadi 'kabidKesbak')
+            $relationName = Str::camel($user->role);
+            $nip = $user->{$relationName} ? $user->{$relationName}->nip : '';
         }
 
-        return view('pages.super-admin.user-management.edit', compact('user', 'nip', 'nim'));
+        return view('pages.super-admin.user-management.edit', compact('user', 'nip'));
     }
 
     /**
@@ -178,19 +189,19 @@ class UserManagementController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $rolesString = implode(',', $this->nipRoles);
+
         $rules = [
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $user->uuid . ',uuid',
             'username' => 'required|string|unique:users,username,' . $user->uuid . ',uuid',
-            'role'     => 'required|in:super_admin,mahasiswa,kabid,operator',
-            'nip'      => 'required_if:role,kabid,operator|nullable|numeric|digits:18',
-            'nim'      => 'required_if:role,mahasiswa|nullable|numeric|digits:10',
+            'role'     => 'required|in:' . $rolesString,
+            'nip'      => 'required_if:role,' . $rolesString . '|nullable|numeric|digits:18',
             'no_wa'    => 'nullable|numeric|digits_between:10,13',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|min:8|confirmed',
         ];
-        $messages = $this->customMessages();
-        $request->validate($rules, $messages);
+        $request->validate($rules, $this->customMessages());
 
         DB::beginTransaction();
         try {
@@ -232,20 +243,13 @@ class UserManagementController extends Controller
                     'users_id' => $user->uuid,
                 ];
 
-                if ($request->role === 'mahasiswa') {
-                    $newData['nim'] = $request->nim;
-                    $newData['status_akun'] = 'aktif';
-                } else {
+                if (in_array($request->role, $this->nipRoles)) {
                     $newData['nip'] = $request->nip;
                 }
 
                 $roleModel::create($newData);
             } else {
-                if ($request->role === 'mahasiswa') {
-                    $roleModel::where('users_id', $user->uuid)->update([
-                        'nim' => $request->nim
-                    ]);
-                } else if (in_array($request->role, ['kabid', 'operator', 'super_admin'])) {
+                if (in_array($request->role, $this->nipRoles)) {
                     $roleModel::where('users_id', $user->uuid)->update([
                         'nip' => $request->nip
                     ]);
@@ -310,10 +314,9 @@ class UserManagementController extends Controller
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
-    // GANTI NAMA FUNGSI DAN RELASINYA
+
     public function pendingPemohon()
     {
-        // Mengambil user dengan role pemohon yang status_akun-nya 'pending'
         $pendingUsers = User::where('role', 'pemohon')
             ->whereHas('pemohon', function ($query) {
                 $query->where('status_akun', 'pending');
@@ -325,7 +328,6 @@ class UserManagementController extends Controller
         return view('pages.super-admin.user-management.pending', compact('pendingUsers'));
     }
 
-    // Metode untuk mengaktifkan atau menolak akun pemohon
     public function activate(Request $request, string $uuid)
     {
         $request->validate([
@@ -334,7 +336,6 @@ class UserManagementController extends Controller
 
         DB::beginTransaction();
         try {
-            // DIUBAH: Pencarian ke model Pemohon
             $pemohon = Pemohon::where('users_id', $uuid)->firstOrFail();
             $statusLama = $pemohon->status_akun;
 
@@ -342,11 +343,10 @@ class UserManagementController extends Controller
                 'status_akun' => $request->status
             ]);
 
-            // Catat Audit
             JejakAudit::create([
                 'users_id' => Auth::id(),
                 'aksi' => 'update',
-                'nama_tabel' => 'pemohon', // DIUBAH: Nama tabel menjadi pemohon
+                'nama_tabel' => 'pemohon',
                 'record_id' => $pemohon->uuid,
                 'data_lama' => ['status_akun' => $statusLama],
                 'data_baru' => ['status_akun' => $request->status],
@@ -405,37 +405,37 @@ class UserManagementController extends Controller
     private function getRoleModel(string $role)
     {
         return [
-            'super_admin'  => SuperAdmin::class,
-            'kabid'        => Kabid::class,
-            'operator'     => Operator::class,
-            'pemohon'    => Pemohon::class,
+            'super_admin'                 => SuperAdmin::class,
+            'pemohon'                     => Pemohon::class,
+            'petugas_verifikasi_data'     => PetugasVerifikasiData::class,
+            'petugas_verifikasi_lapangan' => PetugasVerifikasiLapangan::class,
+            'analis_kebijakan_ahli_muda'  => AnalisKebijakanAhliMuda::class,
+            'kabid_kesbak'                => KabidKesbak::class,
+            'sekban'                      => Sekban::class,
+            'kaban'                       => Kaban::class,
         ][$role];
     }
 
     private function customMessages()
     {
         return [
-            'nama.required'     => 'Nama lengkap wajib diisi.',
-            'email.required'    => 'Alamat email wajib diisi.',
-            'email.email'       => 'Format email tidak valid.',
-            'email.unique'      => 'Email sudah terdaftar di sistem.',
-            'username.required' => 'Username wajib diisi.',
-            'username.unique'   => 'Username sudah digunakan.',
-            'nip.required'      => 'NIP wajib diisi.',
-            'nip.numeric'       => 'NIP harus berupa angka.',
-            'nip.digits'        => 'NIP harus berjumlah 18 digit.',
-            'no_wa.numeric'     => 'Nomor WhatsApp harus berupa angka.',
+            'nama.required'        => 'Nama lengkap wajib diisi.',
+            'email.required'       => 'Alamat email wajib diisi.',
+            'email.email'          => 'Format email tidak valid.',
+            'email.unique'         => 'Email sudah terdaftar di sistem.',
+            'username.required'    => 'Username wajib diisi.',
+            'username.unique'      => 'Username sudah digunakan.',
+            'nip.required_if'      => 'NIP wajib diisi jika Anda memilih role ASN/Pejabat.',
+            'nip.numeric'          => 'NIP harus berupa angka.',
+            'nip.digits'           => 'NIP harus berjumlah 18 digit.',
+            'no_wa.numeric'        => 'Nomor WhatsApp harus berupa angka.',
             'no_wa.digits_between' => 'Nomor WhatsApp harus berjumlah antara 10 sampai 13 digit.',
-            'password.required' => 'Password wajib diisi.',
-            'password.min'      => 'Password minimal harus 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'avatar.image'      => 'File yang diunggah harus berupa gambar.',
-            'avatar.mimes'      => 'Format gambar harus JPG, JPEG, PNG, atau WebP.',
-            'avatar.max'        => 'Ukuran foto terlalu besar, maksimal adalah 2MB.',
-            'nip.required_if'   => 'NIP wajib diisi jika Anda memilih role ASN/Pejabat.',
-            'nim.required_if'   => 'NIM wajib diisi jika Anda memilih role Mahasiswa.',
-            'nim.digits'        => 'NIM harus berjumlah 10 digit.',
-            'nim.numeric'       => 'NIM harus berupa angka.',
+            'password.required'    => 'Password wajib diisi.',
+            'password.min'         => 'Password minimal harus 8 karakter.',
+            'password.confirmed'   => 'Konfirmasi password tidak cocok.',
+            'avatar.image'         => 'File yang diunggah harus berupa gambar.',
+            'avatar.mimes'         => 'Format gambar harus JPG, JPEG, PNG, atau WebP.',
+            'avatar.max'           => 'Ukuran foto terlalu besar, maksimal adalah 2MB.',
         ];
     }
 }

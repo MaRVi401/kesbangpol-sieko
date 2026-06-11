@@ -86,11 +86,13 @@
                             <select name="role" onchange="this.form.submit()"
                                 class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all cursor-pointer">
                                 <option value="">Semua Role</option>
-                                <option value="pengguna_asn" {{ request('role') == 'pengguna_asn' ? 'selected' : '' }}>
-                                    Pengguna ASN</option>
-                                <option value="kabid" {{ request('role') == 'kabid' ? 'selected' : '' }}>Kabid</option>
-                                <option value="operator" {{ request('role') == 'operator' ? 'selected' : '' }}>Operator
-                                </option>
+                                <option value="pemohon" {{ request('role') == 'pemohon' ? 'selected' : '' }}>Pemohon</option>
+                                <option value="petugas_verifikasi_data" {{ request('role') == 'petugas_verifikasi_data' ? 'selected' : '' }}>Petugas Verifikasi Data</option>
+                                <option value="petugas_verifikasi_lapangan" {{ request('role') == 'petugas_verifikasi_lapangan' ? 'selected' : '' }}>Petugas Verifikasi Lapangan</option>
+                                <option value="analis_kebijakan_ahli_muda" {{ request('role') == 'analis_kebijakan_ahli_muda' ? 'selected' : '' }}>Analis Kebijakan Ahli Muda</option>
+                                <option value="kabid_kesbak" {{ request('role') == 'kabid_kesbak' ? 'selected' : '' }}>Kabid Kesbak</option>
+                                <option value="sekban" {{ request('role') == 'sekban' ? 'selected' : '' }}>Sekban</option>
+                                <option value="kaban" {{ request('role') == 'kaban' ? 'selected' : '' }}>Kaban</option>
                             </select>
                         </div>
                     </div>
@@ -162,7 +164,7 @@
                                     @php $roleRel = Str::camel($user->role); @endphp
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         @if ($user->$roleRel)
-                                            {{ $user->role === 'mahasiswa' ? $user->$roleRel->nim : $user->$roleRel->nip }}
+                                            {{ $user->role === 'pemohon' ? ($user->$roleRel->nik ?? '-') : ($user->$roleRel->nip ?? '-') }}
                                         @else
                                             -
                                         @endif
@@ -230,7 +232,7 @@
         </div>
 
         <div class="mt-6">
-            {{ $users->appends(['search' => request('search')])->links() }}
+            {{ $users->appends(['search' => request('search'), 'role' => request('role')])->links() }}
         </div>
     </div>
 
