@@ -96,15 +96,15 @@
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
                                         <span class="font-bold text-gray-900 dark:text-white text-base">
-                                            {{ $ticket->permohonanSkt->nama_organisasi ?? 'N/A' }}
+                                            {{ $ticket->formulir->nama_organisasi ?? 'N/A' }}
                                         </span>
                                         <span class="text-xs text-gray-500 mt-1 flex items-center">
-                                            <i class="ti ti-user mr-1"></i> {{ $ticket->permohonanSkt->nama_ketua ?? 'N/A' }} ({{ $ticket->permohonanSkt->no_kontak ?? '-' }})
+                                            <i class="ti ti-user mr-1"></i> {{ $ticket->formulir->nama_ketua ?? 'N/A' }} ({{ $ticket->formulir->no_kontak ?? '-' }})
                                         </span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-900 dark:text-white">
-                                    <span class="line-clamp-2 text-sm">{{ $ticket->permohonanSkt->alamat_sekretariat ?? '-' }}</span>
+                                    <span class="line-clamp-2 text-sm">{{ $ticket->formulir->alamat_sekretariat ?? '-' }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <button data-modal-target="update-modal-{{ $ticket->uuid }}"
@@ -131,15 +131,12 @@
                                                     </button>
                                                 </div>
 
-                                                {{-- Form Input Berita Acara --}}
-                                                {{-- Catatan: Route ini perlu kita buat di web.php setelah ini --}}
                                                 <form action="{{ route('verif_lapangan.ticket.simpan_berita', $ticket->uuid) }}" method="POST" enctype="multipart/form-data">
                                                     @csrf
                                                     <div class="p-6 space-y-5 text-left max-h-[60vh] overflow-y-auto">
                                                         
-                                                        {{-- Info Singkat --}}
                                                         <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800/30 mb-2">
-                                                            <p class="text-sm text-blue-800 dark:text-blue-300 font-bold">Organisasi: {{ $ticket->permohonanSkt->nama_organisasi }}</p>
+                                                            <p class="text-sm text-blue-800 dark:text-blue-300 font-bold">Organisasi: {{ $ticket->formulir->nama_organisasi ?? '-' }}</p>
                                                             <p class="text-xs text-blue-600 dark:text-blue-400">No Tiket: {{ $ticket->no_tiket }}</p>
                                                         </div>
 
@@ -197,7 +194,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {{-- End Modal --}}
                                 </td>
                             </tr>
                         @empty

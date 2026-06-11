@@ -101,17 +101,17 @@
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
                                         <span class="font-bold text-gray-900 dark:text-white text-base">
-                                            {{ $ticket->permohonanSkt->nama_organisasi ?? 'N/A' }}
+                                            {{ $ticket->formulir->nama_organisasi ?? 'N/A' }}
                                         </span>
                                         <span class="text-xs text-gray-500 flex items-center mt-1">
-                                            <i class="ti ti-user mr-1"></i> {{ $ticket->permohonanSkt->nama_ketua ?? 'N/A' }}
+                                            <i class="ti ti-user mr-1"></i> {{ $ticket->formulir->nama_ketua ?? 'N/A' }}
                                         </span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400 line-clamp-2" title="{{ $ticket->permohonanSkt->alamat_sekretariat ?? '-' }}">
-                                            {{ $ticket->permohonanSkt->alamat_sekretariat ?? 'Alamat tidak ditemukan' }}
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400 line-clamp-2" title="{{ $ticket->formulir->alamat_sekretariat ?? '-' }}">
+                                            {{ $ticket->formulir->alamat_sekretariat ?? 'Alamat tidak ditemukan' }}
                                         </span>
                                     </div>
                                 </td>
@@ -153,14 +153,14 @@
                                                         </div>
                                                         <div>
                                                             <p class="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Kontak Ketua</p>
-                                                            <p class="font-bold text-gray-900 dark:text-white">{{ $ticket->permohonanSkt->no_kontak ?? '-' }}</p>
+                                                            <p class="font-bold text-gray-900 dark:text-white">{{ $ticket->formulir->no_kontak ?? '-' }}</p>
                                                         </div>
                                                     </div>
 
                                                     <div>
                                                         <p class="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Organisasi yang diverifikasi</p>
                                                         <p class="text-lg font-bold text-gray-900 dark:text-white border-l-4 border-blue-500 pl-3">
-                                                            {{ $ticket->permohonanSkt->nama_organisasi ?? '-' }}
+                                                            {{ $ticket->formulir->nama_organisasi ?? '-' }}
                                                         </p>
                                                     </div>
 
@@ -169,7 +169,7 @@
                                                         <div class="flex items-start bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border border-yellow-100 dark:border-yellow-900/30">
                                                             <i class="ti ti-map-pin text-yellow-600 dark:text-yellow-500 text-xl mt-0.5 mr-2"></i>
                                                             <p class="text-sm font-medium text-yellow-800 dark:text-yellow-400 leading-relaxed">
-                                                                {{ $ticket->permohonanSkt->alamat_sekretariat ?? 'Alamat tidak ditemukan' }}
+                                                                {{ $ticket->formulir->alamat_sekretariat ?? 'Alamat tidak ditemukan' }}
                                                             </p>
                                                         </div>
                                                     </div>

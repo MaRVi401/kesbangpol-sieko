@@ -5,63 +5,75 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Pemohon;
+use App\Models\Tiket;
 
 class FileController extends Controller
 {
-    /**
-     * Menampilkan file dari storage private
-     * * @param string
-     */
     public function show(string $path)
     {
-        // 1. Bersihkan path
         $path = ltrim($path, '/');
 
-        // 2. Cek eksistensi file
         if (!Storage::disk('local')->exists($path)) {
             abort(404, 'Dokumen tidak ditemukan di server.');
         }
 
-    // 3. Ambil data user yang sedang login
-        /** @var \App\Models\User $user */
         $user = Auth::user();
-
-        // Normalisasi string role untuk menghindari gagal match karena case-sensitive/spasi
         $userRole = trim(strtolower($user->role));
 
-        // 4. Daftar Role Admin & Petugas
         $allowedRoles = [
             'super_admin',
-            'super-admin', // Tambahan variasi penulisan
+            'super-admin',
             'petugas_verifikasi_data',
             'petugas_verifikasi_lapangan',
             'analis_kebijakan_ahli_muda',
             'kabid_kesbak',
             'sekban',
             'kaban',
-            'operator' // Tambahkan jika operator juga perlu melihat lampiran
+            'operator'
         ];
 
-        // 5. Izinkan jika role termasuk admin/petugas
         if (in_array($userRole, $allowedRoles)) {
             return Storage::disk('local')->response($path);
         }
 
-        // 6. Validasi jika login sebagai pemohon
         if ($userRole === 'pemohon') {
-            $isOwner = Pemohon::where('users_id', $user->uuid)
+            $isProfileOwner = Pemohon::where('users_id', $user->uuid)
                 ->where(function ($query) use ($path) {
                     $query->where('kta_path', $path)
                         ->orWhere('surat_rekomendasi_path', $path);
                 })
                 ->exists();
 
-            if ($isOwner) {
+            if ($isProfileOwner) {
+                return Storage::disk('local')->response($path);
+            }
+
+            $filename = basename($path);
+
+            $isTicketOwner = Tiket::where('users_id', $user->uuid)
+                ->whereHas('formulirPermohonanBaruOrmas', function ($query) use ($filename) {
+                    $query->where('file_kop_surat', $filename)
+                          ->orWhere('file_tanda_tangan_pemohon', $filename)
+                          ->orWhereHas('biodataPengurus', function ($q) use ($filename) {
+                              $q->where('foto_resmi', $filename)
+                                ->orWhere('file_tanda_tangan', $filename);
+                          })
+                          ->orWhereHas('suratPernyataan', function ($q) use ($filename) {
+                              $q->where('file_ttd_ketua_materai', $filename)
+                                ->orWhere('file_ttd_sekretaris', $filename);
+                          })
+                          ->orWhereHas('formulirIsian', function ($q) use ($filename) {
+                              $q->where('file_logo_organisasi', $filename)
+                                ->orWhere('file_bendera_organisasi', $filename);
+                          });
+                })
+                ->exists();
+
+            if ($isTicketOwner) {
                 return Storage::disk('local')->response($path);
             }
         }
 
-        // 7. Jika tidak lolos semua validasi di atas
         abort(403, 'Akses Dibatasi: Anda tidak memiliki izin untuk melihat dokumen ini.');
     }
 }

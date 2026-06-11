@@ -172,14 +172,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:petugas_verifikasi_lapangan')->prefix('verifikator-lapangan')->name('verif_lapangan.')->group(function () {
         Route::controller(\App\Http\Controllers\PetugasVerifikasiLapangan\TicketController::class)->name('ticket.')->group(function () {
             Route::get('/antrean', 'index')->name('index');
-
-
             Route::get('/meja-kerja', 'workdesk')->name('workdesk');
-
             Route::get('/riwayat', 'history')->name('history');
-
             Route::get('/tiket/{uuid}/mulai', 'mulaiVerifikasi')->name('mulai');
             Route::get('/tiket/{uuid}/berita-acara', 'lihatBeritaAcara')->name('berita-acara');
+            
+            // Rute ini yang sebelumnya tertinggal
+            Route::post('/tiket/{uuid}/simpan-berita', 'simpanBeritaAcara')->name('simpan_berita');
         });
     });
 

@@ -79,4 +79,9 @@ class Tiket extends Model
     {
         return $this->hasOne(FormulirPermohonanBaruPencatatanOrmas::class, 'tiket_id', 'uuid');
     }
+
+    public function getFormulirAttribute()
+    {
+        return $this->permohonanSkt ?? $this->formulirPermohonanBaruOrmas;
+    }
 }
