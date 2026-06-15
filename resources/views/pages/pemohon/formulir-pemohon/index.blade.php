@@ -199,77 +199,77 @@
                             <div class="grid gap-6 md:grid-cols-2">
                                 <div class="md:col-span-2">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Lengkap (Jelas dengan gelar)</label>
-                                    <input type="text" name="pengurus[{{ $key }}][nama_lengkap]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="pengurus[{{ $key }}][nama_lengkap]" value="{{ old('pengurus.'.$key.'.nama_lengkap', $payloadDraft['pengurus'][$key]['nama_lengkap'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tempat Lahir</label>
-                                    <input type="text" name="pengurus[{{ $key }}][tempat_lahir]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="pengurus[{{ $key }}][tempat_lahir]" value="{{ old('pengurus.'.$key.'.tempat_lahir', $payloadDraft['pengurus'][$key]['tempat_lahir'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Lahir</label>
-                                    <input type="date" name="pengurus[{{ $key }}][tanggal_lahir]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="date" name="pengurus[{{ $key }}][tanggal_lahir]" value="{{ old('pengurus.'.$key.'.tanggal_lahir', $payloadDraft['pengurus'][$key]['tanggal_lahir'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jenis Kelamin</label>
                                     <select name="pengurus[{{ $key }}][jenis_kelamin]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
-                                        <option value="" disabled selected>Pilih...</option>
-                                        <option value="Pria">Pria</option>
-                                        <option value="Wanita">Wanita</option>
+                                        <option value="" disabled {{ empty(old('pengurus.'.$key.'.jenis_kelamin', $payloadDraft['pengurus'][$key]['jenis_kelamin'] ?? '')) ? 'selected' : '' }}>Pilih...</option>
+                                        <option value="Pria" {{ old('pengurus.'.$key.'.jenis_kelamin', $payloadDraft['pengurus'][$key]['jenis_kelamin'] ?? '') == 'Pria' ? 'selected' : '' }}>Pria</option>
+                                        <option value="Wanita" {{ old('pengurus.'.$key.'.jenis_kelamin', $payloadDraft['pengurus'][$key]['jenis_kelamin'] ?? '') == 'Wanita' ? 'selected' : '' }}>Wanita</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status</label>
                                     <select name="pengurus[{{ $key }}][status_perkawinan]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
-                                        <option value="" disabled selected>Pilih...</option>
-                                        <option value="Kawin">Kawin</option>
-                                        <option value="Belum Kawin">Belum Kawin</option>
-                                        <option value="Janda">Janda</option>
-                                        <option value="Duda">Duda</option>
+                                        <option value="" disabled {{ empty(old('pengurus.'.$key.'.status_perkawinan', $payloadDraft['pengurus'][$key]['status_perkawinan'] ?? '')) ? 'selected' : '' }}>Pilih...</option>
+                                        <option value="Kawin" {{ old('pengurus.'.$key.'.status_perkawinan', $payloadDraft['pengurus'][$key]['status_perkawinan'] ?? '') == 'Kawin' ? 'selected' : '' }}>Kawin</option>
+                                        <option value="Belum Kawin" {{ old('pengurus.'.$key.'.status_perkawinan', $payloadDraft['pengurus'][$key]['status_perkawinan'] ?? '') == 'Belum Kawin' ? 'selected' : '' }}>Belum Kawin</option>
+                                        <option value="Janda" {{ old('pengurus.'.$key.'.status_perkawinan', $payloadDraft['pengurus'][$key]['status_perkawinan'] ?? '') == 'Janda' ? 'selected' : '' }}>Janda</option>
+                                        <option value="Duda" {{ old('pengurus.'.$key.'.status_perkawinan', $payloadDraft['pengurus'][$key]['status_perkawinan'] ?? '') == 'Duda' ? 'selected' : '' }}>Duda</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Agama</label>
-                                    <input type="text" name="pengurus[{{ $key }}][agama]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="pengurus[{{ $key }}][agama]" value="{{ old('pengurus.'.$key.'.agama', $payloadDraft['pengurus'][$key]['agama'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Utusan Organisasi</label>
-                                    <input type="text" name="pengurus[{{ $key }}][utusan_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                    <input type="text" name="pengurus[{{ $key }}][utusan_organisasi]" value="{{ old('pengurus.'.$key.'.utusan_organisasi', $payloadDraft['pengurus'][$key]['utusan_organisasi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                                 </div>
 
                                 <div class="md:col-span-2">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat Organisasi</label>
-                                    <textarea name="pengurus[{{ $key }}][alamat_organisasi]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white"></textarea>
+                                    <textarea name="pengurus[{{ $key }}][alamat_organisasi]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">{{ old('pengurus.'.$key.'.alamat_organisasi', $payloadDraft['pengurus'][$key]['alamat_organisasi'] ?? '') }}</textarea>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telepon Organisasi</label>
-                                    <input type="text" inputmode="numeric" pattern="[0-9]*" name="pengurus[{{ $key }}][telepon_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*" name="pengurus[{{ $key }}][telepon_organisasi]" value="{{ old('pengurus.'.$key.'.telepon_organisasi', $payloadDraft['pengurus'][$key]['telepon_organisasi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pendidikan Terakhir</label>
-                                    <input type="text" name="pengurus[{{ $key }}][pendidikan_terakhir]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="pengurus[{{ $key }}][pendidikan_terakhir]" value="{{ old('pengurus.'.$key.'.pendidikan_terakhir', $payloadDraft['pengurus'][$key]['pendidikan_terakhir'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
 
                                 <div class="md:col-span-2">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat Rumah</label>
-                                    <textarea name="pengurus[{{ $key }}][alamat_rumah]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required></textarea>
+                                    <textarea name="pengurus[{{ $key }}][alamat_rumah]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>{{ old('pengurus.'.$key.'.alamat_rumah', $payloadDraft['pengurus'][$key]['alamat_rumah'] ?? '') }}</textarea>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telepon Rumah / HP</label>
-                                    <input type="text" inputmode="numeric" pattern="[0-9]*" name="pengurus[{{ $key }}][telepon_rumah_hp]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*" name="pengurus[{{ $key }}][telepon_rumah_hp]" value="{{ old('pengurus.'.$key.'.telepon_rumah_hp', $payloadDraft['pengurus'][$key]['telepon_rumah_hp'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Hobby / Kegemaran</label>
-                                    <input type="text" name="pengurus[{{ $key }}][hobi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                    <input type="text" name="pengurus[{{ $key }}][hobi]" value="{{ old('pengurus.'.$key.'.hobi', $payloadDraft['pengurus'][$key]['hobi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                                 </div>
 
                                 <div class="md:col-span-2">
@@ -279,7 +279,7 @@
                                         @for($i = 1; $i <= 5; $i++)
                                             <div class="flex items-center">
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-6">{{ $i }}.</span>
-                                                <input type="text" name="pengurus[{{ $key }}][riwayat_organisasi][]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                                <input type="text" name="pengurus[{{ $key }}][riwayat_organisasi][]" value="{{ old('pengurus.'.$key.'.riwayat_organisasi.'.($i-1), $payloadDraft['pengurus'][$key]['riwayat_organisasi'][$i-1] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                                             </div>
                                         @endfor
                                     </div>
@@ -287,7 +287,7 @@
 
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Pengisian</label>
-                                    <input type="date" name="pengurus[{{ $key }}][tanggal_pengisian]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                    <input type="date" name="pengurus[{{ $key }}][tanggal_pengisian]" value="{{ old('pengurus.'.$key.'.tanggal_pengisian', $payloadDraft['pengurus'][$key]['tanggal_pengisian'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                                 </div>
 
                                 <div class="md:col-span-2 grid gap-6 md:grid-cols-2 mt-4 border-t border-gray-200 dark:border-gray-600 pt-4">
@@ -323,27 +323,27 @@
                         <div class="grid gap-6 md:grid-cols-2">
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Ketua</label>
-                                <input type="text" name="surat_pernyataan[nama_ketua]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                <input type="text" name="surat_pernyataan[nama_ketua]" value="{{ old('surat_pernyataan.nama_ketua', $payloadDraft['surat_pernyataan']['nama_ketua'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                             </div>
                             
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor KTP Ketua</label>
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="16" minlength="16" name="surat_pernyataan[nomor_ktp_ketua]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="16" minlength="16" name="surat_pernyataan[nomor_ktp_ketua]" value="{{ old('surat_pernyataan.nomor_ktp_ketua', $payloadDraft['surat_pernyataan']['nomor_ktp_ketua'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Sekretaris</label>
-                                <input type="text" name="surat_pernyataan[nama_sekretaris]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                <input type="text" name="surat_pernyataan[nama_sekretaris]" value="{{ old('surat_pernyataan.nama_sekretaris', $payloadDraft['surat_pernyataan']['nama_sekretaris'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                             </div>
                             
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor KTP Sekretaris</label>
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="16" minlength="16" name="surat_pernyataan[nomor_ktp_sekretaris]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="16" minlength="16" name="surat_pernyataan[nomor_ktp_sekretaris]" value="{{ old('surat_pernyataan.nomor_ktp_sekretaris', $payloadDraft['surat_pernyataan']['nomor_ktp_sekretaris'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                             </div>
 
                             <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-600 pt-4 mt-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Surat Pernyataan</label>
-                                <input type="date" name="surat_pernyataan[tanggal_surat_pernyataan]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-1/2 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                <input type="date" name="surat_pernyataan[tanggal_surat_pernyataan]" value="{{ old('surat_pernyataan.tanggal_surat_pernyataan', $payloadDraft['surat_pernyataan']['tanggal_surat_pernyataan'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-1/2 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                             </div>
 
                             <div>
@@ -374,97 +374,97 @@
                         <div class="grid gap-6 md:grid-cols-2">
                             <div class="md:col-span-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Organisasi</label>
-                                <input type="text" name="formulir_isian[nama_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                <input type="text" name="formulir_isian[nama_organisasi]" value="{{ old('formulir_isian.nama_organisasi', $payloadDraft['formulir_isian']['nama_organisasi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Bidang Kegiatan</label>
-                                <input type="text" name="formulir_isian[bidang_kegiatan]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Sosial, Pendidikan, Keagamaan" required>
+                                <input type="text" name="formulir_isian[bidang_kegiatan]" value="{{ old('formulir_isian.bidang_kegiatan', $payloadDraft['formulir_isian']['bidang_kegiatan'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Sosial, Pendidikan, Keagamaan" required>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ruang Lingkup</label>
-                                <input type="text" name="formulir_isian[ruang_lingkup]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Kabupaten/Kota, Provinsi, Nasional" required>
+                                <input type="text" name="formulir_isian[ruang_lingkup]" value="{{ old('formulir_isian.ruang_lingkup', $payloadDraft['formulir_isian']['ruang_lingkup'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Kabupaten/Kota, Provinsi, Nasional" required>
                             </div>
 
                             <div class="md:col-span-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat Sekretariat</label>
-                                <textarea name="formulir_isian[alamat_sekretariat]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required></textarea>
+                                <textarea name="formulir_isian[alamat_sekretariat]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>{{ old('formulir_isian.alamat_sekretariat', $payloadDraft['formulir_isian']['alamat_sekretariat'] ?? '') }}</textarea>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tempat Pendirian</label>
-                                <input type="text" name="formulir_isian[tempat_pendirian]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                <input type="text" name="formulir_isian[tempat_pendirian]" value="{{ old('formulir_isian.tempat_pendirian', $payloadDraft['formulir_isian']['tempat_pendirian'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Pendirian</label>
-                                <input type="date" name="formulir_isian[tanggal_pendirian]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                <input type="date" name="formulir_isian[tanggal_pendirian]" value="{{ old('formulir_isian.tanggal_pendirian', $payloadDraft['formulir_isian']['tanggal_pendirian'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                             </div>
 
                             <div class="md:col-span-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Asas / Ciri Organisasi</label>
-                                <input type="text" name="formulir_isian[asas_ciri_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Pancasila dan UUD 1945" required>
+                                <input type="text" name="formulir_isian[asas_ciri_organisasi]" value="{{ old('formulir_isian.asas_ciri_organisasi', $payloadDraft['formulir_isian']['asas_ciri_organisasi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Pancasila dan UUD 1945" required>
                             </div>
 
                             <div class="md:col-span-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tujuan Organisasi</label>
-                                <textarea name="formulir_isian[tujuan_organisasi]" rows="3" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required></textarea>
+                                <textarea name="formulir_isian[tujuan_organisasi]" rows="3" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>{{ old('formulir_isian.tujuan_organisasi', $payloadDraft['formulir_isian']['tujuan_organisasi'] ?? '') }}</textarea>
                             </div>
 
                             <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-600 pt-4 mt-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Pendiri Organisasi</label>
-                                <textarea name="formulir_isian[nama_pendiri]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Pisahkan dengan koma jika lebih dari satu" required></textarea>
+                                <textarea name="formulir_isian[nama_pendiri]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Pisahkan dengan koma jika lebih dari satu" required>{{ old('formulir_isian.nama_pendiri', $payloadDraft['formulir_isian']['nama_pendiri'] ?? '') }}</textarea>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Pembina <span class="text-xs text-gray-500">(Opsional)</span></label>
-                                <input type="text" name="formulir_isian[nama_pembina]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                <input type="text" name="formulir_isian[nama_pembina]" value="{{ old('formulir_isian.nama_pembina', $payloadDraft['formulir_isian']['nama_pembina'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Penasehat <span class="text-xs text-gray-500">(Opsional)</span></label>
-                                <input type="text" name="formulir_isian[nama_penasehat]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                <input type="text" name="formulir_isian[nama_penasehat]" value="{{ old('formulir_isian.nama_penasehat', $payloadDraft['formulir_isian']['nama_penasehat'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                             </div>
 
                             <div class="md:col-span-2 grid gap-6 md:grid-cols-3">
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Ketua</label>
-                                    <input type="text" name="formulir_isian[nama_ketua]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="formulir_isian[nama_ketua]" value="{{ old('formulir_isian.nama_ketua', $payloadDraft['formulir_isian']['nama_ketua'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Sekretaris</label>
-                                    <input type="text" name="formulir_isian[nama_sekretaris]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="formulir_isian[nama_sekretaris]" value="{{ old('formulir_isian.nama_sekretaris', $payloadDraft['formulir_isian']['nama_sekretaris'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
                                 <div>
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Bendahara</label>
-                                    <input type="text" name="formulir_isian[nama_bendahara]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
+                                    <input type="text" name="formulir_isian[nama_bendahara]" value="{{ old('formulir_isian.nama_bendahara', $payloadDraft['formulir_isian']['nama_bendahara'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" required>
                                 </div>
                             </div>
 
                             <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Masa Bhakti Kepengurusan</label>
-                                <input type="text" name="formulir_isian[masa_bhakti_kepengurusan]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: 2024 - 2029" required>
+                                <input type="text" name="formulir_isian[masa_bhakti_kepengurusan]" value="{{ old('formulir_isian.masa_bhakti_kepengurusan', $payloadDraft['formulir_isian']['masa_bhakti_kepengurusan'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: 2024 - 2029" required>
                             </div>
 
                             <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Keputusan Tertinggi Organisasi</label>
-                                <input type="text" name="formulir_isian[keputusan_tertinggi_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Musyawarah Nasional / Kongres" required>
+                                <input type="text" name="formulir_isian[keputusan_tertinggi_organisasi]" value="{{ old('formulir_isian.keputusan_tertinggi_organisasi', $payloadDraft['formulir_isian']['keputusan_tertinggi_organisasi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Musyawarah Nasional / Kongres" required>
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit Sayap Otonom <span class="text-xs text-gray-500">(Opsional)</span></label>
-                                <input type="text" name="formulir_isian[unit_sayap_otonom]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                <input type="text" name="formulir_isian[unit_sayap_otonom]" value="{{ old('formulir_isian.unit_sayap_otonom', $payloadDraft['formulir_isian']['unit_sayap_otonom'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                             </div>
 
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Usaha Organisasi <span class="text-xs text-gray-500">(Opsional)</span></label>
-                                <input type="text" name="formulir_isian[usaha_organisasi]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                <input type="text" name="formulir_isian[usaha_organisasi]" value="{{ old('formulir_isian.usaha_organisasi', $payloadDraft['formulir_isian']['usaha_organisasi'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                             </div>
 
                             <div class="md:col-span-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sumber Keuangan</label>
-                                <input type="text" name="formulir_isian[sumber_keuangan]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Iuran Anggota, Sumbangan Tidak Mengikat" required>
+                                <input type="text" name="formulir_isian[sumber_keuangan]" value="{{ old('formulir_isian.sumber_keuangan', $payloadDraft['formulir_isian']['sumber_keuangan'] ?? '') }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Contoh: Iuran Anggota, Sumbangan Tidak Mengikat" required>
                             </div>
 
                             <div class="md:col-span-2 grid gap-6 md:grid-cols-2 mt-4 border-t border-gray-200 dark:border-gray-600 pt-4">
@@ -504,7 +504,6 @@
         </form>       
     </div>
 </div>
-
 
 @push('scripts')
     @vite('resources/js/service-controller.js')

@@ -155,28 +155,26 @@ const PencatatanOrmasFormHandler = () => {
     const performAutosave = () => {
         saveStatusElement.innerText = "Menyimpan draft...";
         const formData = new FormData(form);
-        const data = {};
         
-        formData.forEach((value, key) => {
-            const inputElement = form.querySelector(`[name="${key}"]`);
-            if (key !== '_token' && inputElement && inputElement.type !== 'file') {
-                data[key] = value;
+        for (let [key, value] of Array.from(formData.entries())) {
+            if (value instanceof File) {
+                formData.delete(key);
             }
-        });
+        }
 
         if (tiketUuidInput && tiketUuidInput.value) {
-            data['tiket_uuid'] = tiketUuidInput.value;
+            formData.set('tiket_uuid', tiketUuidInput.value);
         }
 
         const autosaveUrl = form.getAttribute('data-autosave-url');
+        
         fetch(autosaveUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: formData
         })
         .then(response => response.json())
         .then(res => {
