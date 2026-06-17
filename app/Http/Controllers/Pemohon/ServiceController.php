@@ -63,10 +63,18 @@ class ServiceController extends Controller
             'file_tanda_tangan_pemohon'               => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'pengurus.*.foto_resmi'                   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'pengurus.*.file_tanda_tangan'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'surat_pernyataan.file_ttd_ketua_materai' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'surat_pernyataan.file_ttd_sekretaris'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'surat_pernyataan.file_ttd_ketua_materai' => 'nullable|mimes:pdf,jpeg,png,jpg,webp|max:2048',
+            'surat_pernyataan.file_ttd_sekretaris'    => 'nullable|mimes:pdf,jpeg,png,jpg,webp|max:2048',
             'formulir_isian.file_logo_organisasi'     => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'formulir_isian.file_bendera_organisasi'  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'image' => 'File harus berupa gambar (JPG, JPEG, PNG, WEBP).',
+            'mimes' => 'Format file tidak didukung.',
+            'max'   => 'Ukuran file maksimal 2MB.',
+            'required' => 'Kolom ini wajib diisi.',
+            'digits' => 'Harus berisi :digits angka.',
+            'digits_between' => 'Harus berisi antara :min sampai :max angka.',
+            'array' => 'Format data tidak valid.'
         ]);
 
         DB::beginTransaction();

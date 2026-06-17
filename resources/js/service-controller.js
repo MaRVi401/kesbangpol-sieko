@@ -118,8 +118,10 @@ const PencatatanOrmasFormHandler = () => {
                     let errorHtml = '';
                     if (result.errors) {
                         errorHtml = '<div style="text-align: left;"><ul class="pl-5 text-sm list-disc text-gray-700">';
-                        Object.values(result.errors).forEach(err => {
-                            errorHtml += `<li class="mb-1">${err[0]}</li>`; 
+                        Object.entries(result.errors).forEach(([field, err]) => {
+                            let cleanFieldName = field.replace(/\./g, ' ').replace(/_/g, ' ');
+                            cleanFieldName = cleanFieldName.replace(/\b\w/g, l => l.toUpperCase());
+                            errorHtml += `<li class="mb-1"><b>${cleanFieldName}:</b> ${err[0]}</li>`; 
                         });
                         errorHtml += '</ul></div>';
                     } else {
