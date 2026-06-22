@@ -297,8 +297,11 @@
                                     </div>
 
                                     <div>
-                                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload Tanda Tangan</label>
+                                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload Tanda Tangan {{ $role === 'Ketua' ? '(Bermaterai)' : '' }}</label>
                                         <input type="file" name="pengurus[{{ $key }}][file_tanda_tangan]" accept="image/*" class="block w-full text-xs text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white dark:text-gray-400 focus:outline-none dark:bg-gray-800 dark:border-gray-600">
+                                        @if($role === 'Ketua')
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pastikan tanda tangan mengenai materai.</p>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -493,11 +496,11 @@
                         Isi Dummy Data
                     </button>
                     
-                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition-all">
+                        Simpan & Lanjut Unggah Lampiran
+                        <svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                         </svg>
-                        Simpan Permohonan
                     </button>
                 </div>
             </div>

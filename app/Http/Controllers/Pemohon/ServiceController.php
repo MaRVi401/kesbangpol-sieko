@@ -14,7 +14,7 @@ use App\Models\Tiket;
 use App\Models\Layanan;
 use App\Models\RiwayatStatusTiket;
 use App\Models\JejakAudit;
-
+use App\Models\PermohonanSkt;
 use App\Models\FormulirPermohonanBaruPencatatanOrmas; 
 use App\Models\BiodataPengurusOrmas;
 use App\Models\SuratPernyataanOrmas;
@@ -98,7 +98,7 @@ class ServiceController extends Controller
             if ($tiket) {
                 $tiket->update([
                     'no_tiket' => $noTiket,
-                    'status' => 'diajukan',
+                    'status' => 'menunggu_lampiran',
                     'deskripsi' => 'Permohonan Pencatatan Ormas: ' . $request->nama_organisasi,
                     'payload_draft' => null
                 ]);
@@ -109,7 +109,7 @@ class ServiceController extends Controller
                     'users_id'   => $userId,
                     'layanan_id' => $layanan->uuid,
                     'no_tiket'   => $noTiket,
-                    'status'     => 'diajukan',
+                    'status'     => 'menunggu_lampiran',
                     'deskripsi'  => 'Permohonan Pencatatan Ormas: ' . $request->nama_organisasi,
                     'payload_draft' => null
                 ]);
@@ -210,11 +210,23 @@ class ServiceController extends Controller
                 'file_bendera_organisasi'        => $this->handleFileUpload($request->file('formulir_isian.file_bendera_organisasi'), $userId, 'private/ormas/bendera'),
             ]);
 
+            PermohonanSkt::updateOrCreate(
+                ['tiket_id' => $tiket->uuid],
+                [
+                    'uuid'               => (string) Str::uuid(),
+                    'nama_organisasi'    => $request->nama_organisasi,
+                    'bidang_kegiatan'    => $isian['bidang_kegiatan'],
+                    'alamat_sekretariat' => $request->alamat_sekretariat,
+                    'nama_ketua'         => $request->nama_ketua,
+                    'no_kontak'          => $request->pengurus['ketua']['telepon_rumah_hp'] ?? '000',
+                ]
+            );
+
             RiwayatStatusTiket::create([
                 'tiket_id'          => $tiket->uuid,
                 'users_id'          => $userId, 
                 'status_sebelumnya' => $request->filled('tiket_uuid') ? 'draft' : null,
-                'status_baru'       => 'diajukan'
+                'status_baru'       => 'menunggu_lampiran'
             ]);
             
             JejakAudit::create([
@@ -230,10 +242,11 @@ class ServiceController extends Controller
             DB::commit();
 
             return response()->json([
-                'status'   => 'success',
-                'uuid'     => $tiket->uuid,
-                'no_tiket' => $tiket->no_tiket,
-                'message'  => 'Permohonan berhasil diajukan.',
+                'status'       => 'success',
+                'uuid'         => $tiket->uuid,
+                'no_tiket'     => $tiket->no_tiket,
+                'message'      => 'Tahap 1 selesai. Lanjut unggah lampiran dokumen.',
+                'redirect_url' => route('pemohon.services.lampiran', $tiket->uuid)
             ], 200);
 
         } catch (\Exception $e) {

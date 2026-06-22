@@ -110,12 +110,13 @@ return new class extends Migration
             $table->enum('status', [
                 'draft',
                 'diajukan',
+                'menunggu_lampiran',
                 'pemeriksaan_kelengkapan',
                 'data_tidak_sesuai',
                 'persyaratan_lengkap',
                 'verifikasi_lapangan',
                 'pembuatan_berita_acara',
-                'review_berita_acara', // <--- Tambahkan baris ini
+                'review_berita_acara',
                 'pembuatan_draft_skt',
                 'menunggu_penandatanganan',
                 'skt_disetujui',
@@ -158,9 +159,23 @@ return new class extends Migration
             $table->text('alamat_sekretariat');
             $table->string('nama_ketua');
             $table->string('no_kontak');
+            $table->string('nama_notaris')->nullable();
+            $table->date('tanggal_akte')->nullable();
             $table->string('akta_pendirian_path')->nullable();
+            $table->string('nomor_sk_kemenkumham')->nullable();
+            $table->date('tanggal_sk_kemenkumham')->nullable();
             $table->string('sk_kemenkumham_path')->nullable();
             $table->string('surat_domisili_path')->nullable();
+            $table->string('file_ad_art_path')->nullable();
+            $table->string('file_program_kerja_path')->nullable();
+            $table->string('nomor_sk_terlapor')->nullable();
+            $table->date('tanggal_berlaku_sk_terlapor')->nullable();
+            $table->string('file_sk_terlapor_path')->nullable();
+            $table->string('file_npwp_path')->nullable();
+            $table->string('file_foto_kantor_path')->nullable();
+            $table->string('file_surat_mandat_path')->nullable();
+            $table->string('periode_sk_kepengurusan')->nullable();
+            $table->string('file_sk_kepengurusan_path')->nullable();
             $table->timestamps();
         });
 
@@ -211,6 +226,7 @@ return new class extends Migration
             $table->json('riwayat_organisasi')->nullable();
             $table->string('hobi')->nullable();
             $table->string('foto_resmi');
+            $table->string('file_ktp_path')->nullable();
             $table->string('file_tanda_tangan')->nullable();
             $table->date('tanggal_pengisian')->nullable();
             $table->timestamps();

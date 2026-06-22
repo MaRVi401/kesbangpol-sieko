@@ -20,7 +20,7 @@ class BiodataPengurusOrmas extends Model
         'jenis_kelamin', 'status_perkawinan', 'agama', 'utusan_organisasi', 
         'jabatan', 'alamat_organisasi', 'telepon_organisasi', 'alamat_rumah', 
         'telepon_rumah_hp', 'pendidikan_terakhir', 'riwayat_organisasi', 'hobi', 
-        'foto_resmi', 'file_tanda_tangan', 'tanggal_pengisian'
+        'foto_resmi', 'file_ktp_path', 'file_tanda_tangan', 'tanggal_pengisian'
     ];
 
     protected function casts(): array

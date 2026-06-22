@@ -84,7 +84,7 @@ class TicketController extends Controller
     {
         $search = $request->input('search');
 
-        // Relasi sudah sesuai dengan tabel di migration
+        
         $query = Tiket::with(['user', 'layanan', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
             ->where('petugas_id', $request->user()->uuid)
             ->whereIn('status', ['pemeriksaan_kelengkapan', 'review_berita_acara']);
@@ -121,7 +121,7 @@ class TicketController extends Controller
         $statusLama = $ticket->status;
 
         DB::transaction(function () use ($request, $ticket, $statusLama) {
-            // PERBAIKAN: Kosongkan petugas_id agar tiket masuk ke antrean berikutnya
+            
             $ticket->update([
                 'status' => $request->status,
                 'petugas_id' => null, 
