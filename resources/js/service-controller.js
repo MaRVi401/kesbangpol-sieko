@@ -103,15 +103,19 @@ const PencatatanOrmasFormHandler = () => {
                 if (response.ok) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Berhasil!',
-                        text: `Permohonan Pencatatan Ormas dengan nomor tiket ${result.no_tiket || ''} berhasil diajukan.`,
-                        confirmButtonText: 'Ke Riwayat Tiket',
-                        confirmButtonColor: '#3085d6',
+                        title: 'Tahap 1 Berhasil!',
+                        text: result.message || `Data tiket ${result.no_tiket || ''} tersimpan.`,
+                        confirmButtonText: 'Lanjut Unggah Lampiran',
+                        confirmButtonColor: '#1d4ed8',
                         allowOutsideClick: false
                     }).then((sweetResult) => {
                         if (sweetResult.isConfirmed) {
-                            const historyUrl = form.getAttribute('data-history-url') || '/history';
-                            window.location.href = historyUrl;
+                            if (result.redirect_url) {
+                                window.location.href = result.redirect_url;
+                            } else {
+                                const historyUrl = form.getAttribute('data-history-url') || '/history';
+                                window.location.href = historyUrl;
+                            }
                         }
                     });
                 } else {

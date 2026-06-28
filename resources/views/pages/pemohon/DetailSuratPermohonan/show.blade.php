@@ -13,9 +13,8 @@
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">Tiket #{{ $ticket->no_tiket }}</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Layanan: <span class="font-semibold text-blue-600 dark:text-blue-400">{{ $ticket->layanan->nama ?? 'Layanan SKT/Ormas' }}</span></p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 @php
-                    // Logika warna status disesuaikan dengan enum migrasi terbaru
                     $statusColor = match(strtolower($ticket->status)) {
                         'draft', 'diajukan' => 'bg-gray-100 text-gray-800 border-gray-200',
                         'pemeriksaan_kelengkapan', 'verifikasi_lapangan', 'pembuatan_berita_acara', 'pembuatan_draft_skt', 'menunggu_penandatanganan', 'penomoran_skt' => 'bg-blue-100 text-blue-800 border-blue-200',
@@ -36,6 +35,30 @@
                 @endif
             </div>
         </div>
+
+        @if(strtolower($ticket->status) === 'menunggu_lampiran')
+            <div class="mb-6 bg-white dark:bg-gray-800 p-8 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 shadow-sm flex flex-col items-center justify-center text-center">
+                <div class="mb-4">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Tindakan Diperlukan</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-lg">
+                    Permohonan Anda tertunda. Silakan selesaikan proses pengajuan dengan mengunggah seluruh dokumen persyaratan administratif yang diminta.
+                </p>
+                
+                <a href="{{ route('pemohon.services.lampiran', $ticket->uuid) }}" 
+                   class="inline-flex items-center justify-center px-8 py-3 text-sm font-extrabold text-gray-900 bg-[#39ff14] rounded-lg border border-[#32e612] hover:bg-[#32e612] focus:ring-4 focus:outline-none focus:ring-[#39ff14]/50 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] hover:shadow-[0_0_25px_rgba(57,255,20,0.7)]">
+                    <svg class="w-5 h-5 mr-2 -ml-1 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    LANJUTKAN UNGGAH LAMPIRAN
+                </a>
+            </div>
+        @endif
 
         @if(in_array(strtolower($ticket->status), ['data_tidak_sesuai', 'skt_ditolak']) && isset($ticket->komentar) && $ticket->komentar->isNotEmpty())
             <div class="mb-6 p-5 rounded-xl border shadow-sm bg-red-50 border-red-200 dark:bg-red-900/10 dark:border-red-800">
@@ -70,7 +93,6 @@
             </div>
             
             <div class="p-6">
-                {{-- Di sinilah kita memanggil file partial yang berisi ratusan baris kode detail tadi --}}
                 @include('pages.pemohon.DetailSuratPermohonan.partials._detail_ormas')
             </div>
         </div>

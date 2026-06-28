@@ -18,6 +18,8 @@ use App\Http\Controllers\Pemohon\DashboardController as PemohonDashboardControll
 use App\Http\Controllers\Pemohon\ServiceController;
 use App\Http\Controllers\Pemohon\ServiceHistoryTicketController;
 
+use App\Http\Controllers\Pemohon\LampiranController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -143,6 +145,14 @@ Route::middleware('auth')->group(function () {
         Route::post('services/autosave', [ServiceController::class, 'autosave'])->name('services.autosave');
         Route::get('/history', [ServiceHistoryTicketController::class, 'index'])->name('history.index');
         Route::get('/history/{uuid}', [ServiceHistoryTicketController::class, 'show'])->name('history.show');
+        
+        Route::get('services/{tiket_uuid}/lampiran', [LampiranController::class, 'create'])->name('services.lampiran');
+        
+        Route::post('services/{tiket_uuid}/lampiran/legalitas', [LampiranController::class, 'storeLegalitas'])->name('services.lampiran.legalitas');
+        Route::post('services/{tiket_uuid}/lampiran/domisili', [LampiranController::class, 'storeDomisili'])->name('services.lampiran.domisili');
+        Route::post('services/{tiket_uuid}/lampiran/ktp', [LampiranController::class, 'storeKtp'])->name('services.lampiran.ktp');
+        
+        Route::post('services/{tiket_uuid}/lampiran/selesai', [LampiranController::class, 'finalize'])->name('services.lampiran.selesai');
 
         Route::delete('/history/{uuid}', [ServiceHistoryTicketController::class, 'destroy'])->name('history.destroy');
     });
