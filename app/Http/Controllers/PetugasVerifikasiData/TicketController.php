@@ -204,10 +204,10 @@ class TicketController extends Controller
 
     public function show(Request $request, string $uuid): View
     {
-        
         $ticket = Tiket::with([
             'user', 
             'layanan',
+            'permohonanSkt', // 👇 INI YANG DITAMBAHKAN 👇
             'formulirPermohonanBaruOrmas.biodataPengurus',
             'formulirPermohonanBaruOrmas.suratPernyataan',
             'formulirPermohonanBaruOrmas.formulirIsian'

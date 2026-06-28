@@ -1,5 +1,6 @@
 @php
     $formulir = $ticket->formulirPermohonanBaruOrmas;
+    $permohonan = $ticket->permohonanSkt;
 @endphp
 
 @if($formulir)
@@ -187,6 +188,18 @@
                                 </a>
                             </div>
                         @endif
+                        @if($pengurus->file_ktp_path)
+                            <div>
+                                <span class="text-gray-500 block text-xs uppercase mb-2">KTP</span>
+                                <a href="{{ url('/storage/private/private/ormas/ktp/' . $pengurus->file_ktp_path) }}" target="_blank">
+                                    @if(Str::endsWith(strtolower($pengurus->file_ktp_path), '.pdf'))
+                                        <span class="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium transition-colors">Lihat PDF KTP</span>
+                                    @else
+                                        <img src="{{ url('/storage/private/private/ormas/ktp/' . $pengurus->file_ktp_path) }}" class="h-20 object-contain rounded-lg border border-gray-300 shadow-sm bg-white p-2 hover:opacity-90 mt-2">
+                                    @endif
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -340,6 +353,49 @@
                     @endif
                 </div>
             </div>
+        </div>
+    </div>
+    @endif
+    @if($permohonan)
+    <div>
+        <h4 class="text-md font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 text-xs rounded-full bg-blue-100 text-blue-600">8</span>
+            Dokumen Legalitas & Persyaratan Administratif
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+            @php
+                $lampiranList = [
+                    'Akte Pendirian Notaris' => $permohonan->akta_pendirian_path,
+                    'SK Kemenkumham / SKT' => $permohonan->sk_kemenkumham_path,
+                    'AD / ART' => $permohonan->file_ad_art_path,
+                    'Program Kerja' => $permohonan->file_program_kerja_path,
+                    'SK Kepengurusan' => $permohonan->file_sk_kepengurusan_path,
+                    'Surat Mandat Pengurus' => $permohonan->file_surat_mandat_path,
+                    'Keterangan Domisili Sekretariat' => $permohonan->surat_domisili_path,
+                    'Foto Kantor Sekretariat' => $permohonan->file_foto_kantor_path,
+                    'NPWP Organisasi' => $permohonan->file_npwp_path,
+                    'SK Terlapor Kesbangpol' => $permohonan->file_sk_terlapor_path,
+                ];
+            @endphp
+
+            @foreach($lampiranList as $label => $path)
+            <div>
+                <p class="text-xs text-gray-500 uppercase font-semibold mb-2">{{ $label }}</p>
+                @if($path)
+                    @php $fileUrl = url('/storage/private/private/ormas/lampiran/' . $path); @endphp
+                    @if(Str::endsWith(strtolower($path), '.pdf'))
+                        <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 text-sm font-medium transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg> 
+                            Lihat PDF
+                        </a>
+                    @else
+                        <a href="{{ $fileUrl }}" target="_blank"><img src="{{ $fileUrl }}" class="h-24 object-contain rounded-lg border border-gray-200 shadow-sm bg-white p-2 hover:opacity-90"></a>
+                    @endif
+                @else
+                    <span class="text-sm text-gray-400 italic">Tidak ada lampiran</span>
+                @endif
+            </div>
+            @endforeach
         </div>
     </div>
     @endif
