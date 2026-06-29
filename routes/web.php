@@ -8,7 +8,7 @@ use App\Http\Controllers\ProfileController;
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DevTemplateController;
-use App\Http\Controllers\Operator\TicketController as OperatorTicketController;
+
 use App\Http\Controllers\Admin\SiemController;
 use App\Http\Controllers\Kabid\PersetujuanKabidController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -179,19 +179,34 @@ Route::middleware('auth')->group(function () {
     });
 
     // 4. Petugas Verifikasi LapanRoute::get('/', function () { return 'Ini halaman Kaban'; })->name('index');gan
+    // 4. Petugas Verifikasi Lapangan
     Route::middleware('can:petugas_verifikasi_lapangan')->prefix('verifikator-lapangan')->name('verif_lapangan.')->group(function () {
         Route::controller(\App\Http\Controllers\PetugasVerifikasiLapangan\TicketController::class)->name('ticket.')->group(function () {
+            
             Route::get('/antrean', 'index')->name('index');
             Route::get('/meja-kerja', 'workdesk')->name('workdesk');
             Route::get('/riwayat', 'history')->name('history');
+            
             Route::get('/tiket/{uuid}/mulai', 'mulaiVerifikasi')->name('mulai');
             Route::get('/tiket/{uuid}/berita-acara', 'lihatBeritaAcara')->name('berita-acara');
+            Route::get('/tiket/{uuid}/show', 'show')->name('show');
             
-            // Rute ini yang sebelumnya tertinggal
+            // --- Manajemen Berita Acara Lapangan ---
+            
+            // Simpan Berita Acara Baru
             Route::post('/tiket/{uuid}/simpan-berita', 'simpanBeritaAcara')->name('simpan_berita');
+            
+            // Update Berita Acara 
+            Route::put('/tiket/{uuid}/update-berita', 'updateBeritaAcara')->name('update_berita'); 
+            
+            // Generate & Download PDF
+            Route::get('/tiket/{uuid}/generate-pdf-berita-acara', 'generatePdfBeritaAcaraLapangan')->name('generate_pdf');
+            
+            // Upload Fisik Scan Berita Acara
+            Route::post('/tiket/{uuid}/upload-scan', 'uploadScanBeritaAcara')->name('upload_scan');
+            
         });
     });
-
     // 5. Analis Kebijakan Ahli Muda
     Route::middleware('can:analis_kebijakan_ahli_muda')->prefix('analis')->name('analis.')->group(function () {});
 

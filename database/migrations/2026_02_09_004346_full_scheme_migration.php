@@ -131,10 +131,27 @@ return new class extends Migration
         Schema::create('berita_acara_lapangan', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
             $table->foreignUuid('tiket_id')->constrained('tiket', 'uuid')->cascadeOnDelete();
-            $table->foreignUuid('petugas_lapangan_id')->constrained('users', 'uuid');
-            $table->date('tanggal_verifikasi');
-            $table->text('catatan_lapangan');
-            $table->json('foto_dokumentasi')->nullable();
+            $table->string('nomor_berita_acara')->nullable()->unique();
+            $table->date('tanggal_kunjungan');
+            $table->enum('keberadaan_sekretariat', ['ada', 'tidak_ada'])->nullable();
+            $table->enum('papan_nama_terpasang', ['ada', 'tidak_ada'])->nullable();
+            $table->boolean('sekretariat_aktif')->nullable();
+            $table->boolean('kepengurusan_ditemui')->nullable();
+            $table->boolean('dokumen_tersedia')->nullable();
+            $table->boolean('kegiatan_berjalan')->nullable();
+            $table->enum('kondisi_sekretariat', ['layak', 'kurang_layak'])->nullable();
+            $table->text('keterangan_hasil')->nullable();
+            $table->enum('kesimpulan_sekretariat', [
+                'ditemukan_dan_aktif',
+                'ditemukan_tidak_aktif',
+                'tidak_ditemukan'
+            ])->nullable();
+            $table->enum('kesimpulan_kepengurusan', [
+                'aktif_berkegiatan',
+                'tidak_aktif'
+            ])->nullable();
+            $table->foreignUuid('ketua_tim_id')->constrained('users', 'uuid');
+            $table->json('anggota_tim')->nullable();
             $table->boolean('is_sesuai')->default(false);
             $table->string('file_berita_acara_path')->nullable();
             $table->timestamps();
