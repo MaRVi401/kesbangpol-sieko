@@ -51,6 +51,7 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'jenis_permohonan'                        => 'required|in:baru,perubahan,registrasi',
             'nama_pemohon'                            => 'required|string|max:255',
             'nomor_ktp'                               => 'required|digits:16',
             'nama_organisasi'                         => 'required|string|max:255',
@@ -214,6 +215,7 @@ class ServiceController extends Controller
                 ['tiket_id' => $tiket->uuid],
                 [
                     'uuid'               => (string) Str::uuid(),
+                    'jenis_permohonan'   => $request->jenis_permohonan,
                     'nama_organisasi'    => $request->nama_organisasi,
                     'bidang_kegiatan'    => $isian['bidang_kegiatan'],
                     'alamat_sekretariat' => $request->alamat_sekretariat,

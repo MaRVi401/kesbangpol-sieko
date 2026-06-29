@@ -106,6 +106,7 @@ return new class extends Migration
             $table->string('no_tiket')->unique();
             $table->string('lampiran')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->text('catatan_lapangan')->nullable();
             $table->json('payload_draft')->nullable();
             $table->enum('status', [
                 'draft',
@@ -154,6 +155,7 @@ return new class extends Migration
         Schema::create('permohonan_skt', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
             $table->foreignUuid('tiket_id')->constrained('tiket', 'uuid')->cascadeOnDelete();
+            $table->enum('jenis_permohonan', ['baru', 'perubahan', 'registrasi'])->default('baru');
             $table->string('nama_organisasi');
             $table->string('bidang_kegiatan');
             $table->text('alamat_sekretariat');

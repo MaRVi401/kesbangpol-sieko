@@ -24,6 +24,7 @@ class Tiket extends Model
         'no_tiket', 
         'lampiran',
         'deskripsi',
+        'catatan_lapangan',
         'payload_draft',
         'status'
     ];

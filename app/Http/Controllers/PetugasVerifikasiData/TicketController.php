@@ -84,7 +84,6 @@ class TicketController extends Controller
     {
         $search = $request->input('search');
 
-        
         $query = Tiket::with(['user', 'layanan', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
             ->where('petugas_id', $request->user()->uuid)
             ->whereIn('status', ['pemeriksaan_kelengkapan', 'review_berita_acara']);
@@ -103,15 +102,16 @@ class TicketController extends Controller
 
         $tickets = $query->latest()->paginate(10);
 
-        // PERBAIKAN: Sesuaikan path direktori view dengan struktur yang benar
         return view('pages.PetugasVerifikasiData.ticket.workdesk', compact('tickets'));
     }
 
     public function update(Request $request, string $uuid): RedirectResponse
     {
+        // 1. Tambahkan validasi untuk catatan_lapangan
         $request->validate([
-            'status'   => 'required|in:persyaratan_lengkap,data_tidak_sesuai,pembuatan_draft_skt', 
-            'komentar' => 'required|string|min:1',
+            'status'           => 'required|in:persyaratan_lengkap,data_tidak_sesuai,pembuatan_draft_skt', 
+            'komentar'         => 'required|string|min:1',
+            'catatan_lapangan' => 'nullable|string', 
         ]);
 
         $ticket = Tiket::where('uuid', $uuid)
@@ -122,9 +122,11 @@ class TicketController extends Controller
 
         DB::transaction(function () use ($request, $ticket, $statusLama) {
             
+            // 2. Simpan catatan_lapangan ke dalam database
             $ticket->update([
-                'status' => $request->status,
-                'petugas_id' => null, 
+                'status'           => $request->status,
+                'petugas_id'       => null, 
+                'catatan_lapangan' => $request->catatan_lapangan, 
             ]);
 
             DB::table('komentar_tiket')->insert([
@@ -201,13 +203,12 @@ class TicketController extends Controller
         return view('pages.PetugasVerifikasiData.ticket.history', compact('tickets'));
     }
 
-
     public function show(Request $request, string $uuid): View
     {
         $ticket = Tiket::with([
             'user', 
             'layanan',
-            'permohonanSkt', // 👇 INI YANG DITAMBAHKAN 👇
+            'permohonanSkt', 
             'formulirPermohonanBaruOrmas.biodataPengurus',
             'formulirPermohonanBaruOrmas.suratPernyataan',
             'formulirPermohonanBaruOrmas.formulirIsian'

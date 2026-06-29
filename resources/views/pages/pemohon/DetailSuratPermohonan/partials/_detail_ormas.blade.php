@@ -6,13 +6,16 @@
 @if($formulir)
 <div class="space-y-10">
 
-    {{-- 1 & 2. INFORMASI SURAT & DATA PEMOHON --}}
     <div>
         <h4 class="text-md font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2">
             <span class="flex items-center justify-center w-6 h-6 text-xs rounded-full bg-blue-100 text-blue-600">1</span>
             Informasi Surat & Data Pemohon
         </h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+            <div>
+                <p class="text-xs text-gray-500 uppercase font-semibold">Jenis Permohonan</p>
+                <p class="text-base font-bold text-blue-600 dark:text-blue-400 capitalize">{{ $permohonan->jenis_permohonan ?? '-' }}</p>
+            </div>
             <div>
                 <p class="text-xs text-gray-500 uppercase font-semibold">Nomor & Perihal Surat</p>
                 <p class="text-base font-medium text-gray-900 dark:text-white">{{ $formulir->nomor ?? '-' }} <br> <span class="text-sm text-gray-600 dark:text-gray-400">{{ $formulir->perihal ?? '-' }}</span></p>
@@ -43,7 +46,6 @@
                 <p class="text-base font-medium text-gray-900 dark:text-white">{{ $formulir->alamat_rumah }}</p>
             </div>
 
-            {{-- LAMPIRAN PEMOHON (KOP SURAT & TTD) --}}
             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div>
                     <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Kop Surat</p>
@@ -74,7 +76,6 @@
         </div>
     </div>
 
-    {{-- 3 & 4. PROFIL ORGANISASI & KEANGGOTAAN --}}
     <div>
         <h4 class="text-md font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2">
             <span class="flex items-center justify-center w-6 h-6 text-xs rounded-full bg-blue-100 text-blue-600">2</span>
@@ -122,7 +123,6 @@
         </div>
     </div>
 
-    {{-- 5. BIODATA PENGURUS --}}
     @if($formulir->biodataPengurus && $formulir->biodataPengurus->count() > 0)
     <div>
         <h4 class="text-md font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2">
@@ -157,7 +157,7 @@
 
                     @php
                         $riwayat = is_string($pengurus->riwayat_organisasi) ? json_decode($pengurus->riwayat_organisasi, true) : $pengurus->riwayat_organisasi;
-                        $riwayat = array_filter($riwayat ?? []); // Hapus yang kosong
+                        $riwayat = array_filter($riwayat ?? []); 
                     @endphp
                     @if(!empty($riwayat))
                         <div class="md:col-span-2 pt-2 border-t border-gray-100 dark:border-gray-700 mt-2">
@@ -170,7 +170,6 @@
                         </div>
                     @endif
 
-                    {{-- LAMPIRAN PENGURUS (FOTO & TTD) --}}
                     <div class="md:col-span-2 flex flex-wrap gap-6 mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
                         @if($pengurus->foto_resmi)
                             <div>
@@ -208,7 +207,6 @@
     </div>
     @endif
 
-    {{-- 6. SURAT PERNYATAAN ORGANISASI --}}
     @if($formulir->suratPernyataan)
     <div>
         <h4 class="text-md font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2">
@@ -230,7 +228,6 @@
                     <p class="text-base font-medium text-gray-900 dark:text-white">{{ $formulir->suratPernyataan->tanggal_surat_pernyataan ? \Carbon\Carbon::parse($formulir->suratPernyataan->tanggal_surat_pernyataan)->translatedFormat('d F Y') : '-' }}</p>
                 </div>
                 
-                {{-- LAMPIRAN SURAT PERNYATAAN --}}
                 <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 border-t border-blue-200 dark:border-blue-800 pt-4">
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-semibold mb-2">TTD Ketua (Bermaterai)</p>
@@ -268,7 +265,6 @@
     </div>
     @endif
 
-    {{-- 7. FORMULIR ISIAN ORGANISASI --}}
     @if($formulir->formulirIsian)
     <div>
         <h4 class="text-md font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2">
@@ -332,7 +328,6 @@
                 <span class="font-medium text-gray-900 dark:text-white">{{ $formulir->formulirIsian->sumber_keuangan }}</span>
             </div>
 
-            {{-- LAMPIRAN LOGO & BENDERA --}}
             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div>
                     <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Logo Organisasi</p>

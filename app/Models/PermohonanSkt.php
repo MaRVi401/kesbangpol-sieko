@@ -17,6 +17,7 @@ class PermohonanSkt extends Model
 
     protected $fillable = [
         'tiket_id',
+        'jenis_permohonan',
         'nama_organisasi',
         'bidang_kegiatan',
         'alamat_sekretariat',

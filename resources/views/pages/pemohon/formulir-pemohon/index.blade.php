@@ -26,6 +26,17 @@
                         <span class="flex items-center justify-center w-6 h-6 mr-2 text-sm rounded-full bg-blue-100 text-blue-600">1</span>
                         Informasi Surat Permohonan
                     </h3>
+                    
+                    <div class="mb-6">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jenis Permohonan <span class="text-red-500">*</span></label>
+                        <select name="jenis_permohonan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <option value="" disabled {{ empty(old('jenis_permohonan', $payloadDraft['jenis_permohonan'] ?? '')) ? 'selected' : '' }}>-- Pilih Jenis Permohonan --</option>
+                            <option value="baru" {{ old('jenis_permohonan', $payloadDraft['jenis_permohonan'] ?? '') == 'baru' ? 'selected' : '' }}>Baru (Belum pernah mencatatkan sebelumnya)</option>
+                            <option value="registrasi" {{ old('jenis_permohonan', $payloadDraft['jenis_permohonan'] ?? '') == 'registrasi' ? 'selected' : '' }}>Registrasi (SKT habis, tidak ada perubahan pengurus/domisili)</option>
+                            <option value="perubahan" {{ old('jenis_permohonan', $payloadDraft['jenis_permohonan'] ?? '') == 'perubahan' ? 'selected' : '' }}>Perubahan (SKT habis dan terdapat perubahan pengurus/domisili)</option>
+                        </select>
+                    </div>
+
                     <div class="grid gap-6 md:grid-cols-3">
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor Surat</label>

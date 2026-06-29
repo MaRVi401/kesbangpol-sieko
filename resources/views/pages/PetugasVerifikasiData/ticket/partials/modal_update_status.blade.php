@@ -44,9 +44,15 @@
                             <option value="data_tidak_sesuai">Verifikasi Gagal (Berkas Tidak Sesuai)</option>
                         </select>
                     </div>
+                    
                     <div>
                         <label class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">Balasan ke Pengguna</label>
                         <textarea name="komentar" rows="4" required class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Tuliskan instruksi langkah selanjutnya atau alasan penolakan..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-900 dark:text-white">Catatan Internal (Untuk Petugas Lapangan)</label>
+                        <textarea name="catatan_lapangan" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-yellow-50 rounded-lg border border-yellow-300 focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Tuliskan instruksi khusus untuk tim verifikasi lapangan..."></textarea>
                     </div>
                 </div>
 
