@@ -18,6 +18,8 @@ use App\Http\Controllers\Pemohon\DashboardController as PemohonDashboardControll
 use App\Http\Controllers\Pemohon\ServiceController;
 use App\Http\Controllers\Pemohon\ServiceHistoryTicketController;
 
+
+
 use App\Http\Controllers\Pemohon\LampiranController;
 
 
@@ -160,8 +162,8 @@ Route::middleware('auth')->group(function () {
     // 3. Petugas Verifikasi Data
     Route::middleware('can:petugas_verifikasi_data')->prefix('verifikator-data')->name('verif_data.')->group(function () {
         
-Route::post('/ticket/{uuid}/kirim-analis', [\App\Http\Controllers\PetugasVerifikasiData\TicketController::class, 'kirimKeAnalis'])->name('ticket.kirim-analis');
-        Route::controller(\App\Http\Controllers\PetugasVerifikasiData\TicketController::class)->name('ticket.')->group(function () {
+            Route::post('/ticket/{uuid}/kirim-analis', [\App\Http\Controllers\PetugasVerifikasiData\TicketController::class, 'kirimKeAnalis'])->name('ticket.kirim-analis');
+            Route::controller(\App\Http\Controllers\PetugasVerifikasiData\TicketController::class)->name('ticket.')->group(function () {
             Route::get('/tiket-masuk', 'index')->name('index');
             Route::post('/tiket/{uuid}/handle', 'handle')->name('handle');
 
@@ -178,7 +180,7 @@ Route::post('/ticket/{uuid}/kirim-analis', [\App\Http\Controllers\PetugasVerifik
 
 
             Route::get('/tiket/{uuid}/preview-pdf', 'previewPdf')->name('preview-pdf');
-            Route::get('/tiket/{uuid}/download-docx', 'downloadDocx')->name('download-docx');
+            Route::get('/tiket/{uuid}/download-docx', 'unduhSurat')->name('download-docx');
         });
     });
 

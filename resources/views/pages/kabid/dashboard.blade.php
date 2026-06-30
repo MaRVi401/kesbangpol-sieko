@@ -105,11 +105,11 @@
                                             </button>
                                         </form>
 
-                                        <button type="button" 
+                                        <!-- <button type="button" 
                                                 onclick="bukaModalTolak('{{ $tiket->uuid }}', '{{ $tiket->no_tiket }}')"
                                                 class="btn-tolak inline-flex items-center justify-center px-3 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 transition-all shadow-sm font-bold text-xs">
                                             <i class="ti ti-x mr-1"></i> Tolak
-                                        </button>
+                                        </button> -->
                                     </div>
                                 </td>
                             </tr>
@@ -125,56 +125,6 @@
             </div>
             <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700 rounded-b-xl">
                 {{ $tiketMenunggu->links() }}
-            </div>
-        </div>
-
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col">
-            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 flex justify-between items-center text-heading font-bold italic">
-                <h3 class="flex items-center text-gray-900 dark:text-white">
-                    <i class="ti ti-history text-blue-600 me-2 text-xl"></i> Riwayat Tiket Diproses
-                </h3>
-            </div>
-            <div class="relative overflow-x-auto bg-white dark:bg-[#1e293b]">
-                <table class="w-full text-sm text-left">
-                    <thead class="text-xs uppercase bg-white dark:bg-[#1e293b] border-b border-gray-100 dark:border-gray-700/50">
-                        <tr>
-                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">No. Tiket</th>
-                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Pengaju</th>
-                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Status Akhir</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
-                        @forelse($tiketHistory as $history)
-                            <tr class="hover:bg-blue-50/30 dark:hover:bg-slate-700/40 transition-all duration-200">
-                                <td class="px-6 py-4">
-                                    <span class="inline-block px-2.5 py-1 text-xs font-black rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 tracking-wider">
-                                        {{ $history->no_tiket }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                    {{ $history->user->nama ?? 'N/A' }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if($history->status == 'skt_ditolak')
-                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-700 bg-red-100 rounded-lg border border-red-200">
-                                            DITOLAK
-                                        </span>
-                                    @else
-                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-green-700 bg-green-100 rounded-lg border border-green-200">
-                                            SELESAI DIPARAF KABID
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" class="px-6 py-10 text-center italic text-gray-400 bg-white dark:bg-[#1e293b]">
-                                    Belum ada riwayat tiket yang diproses.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>

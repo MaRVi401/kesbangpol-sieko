@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Models\DraftSkt;
 use App\Models\SuratRegistrasiOrmas;
 
+
 class TicketController extends Controller
 {
     public function index(Request $request): View
@@ -174,7 +175,7 @@ class TicketController extends Controller
                 $q->select('tiket_id')
                   ->from('riwayat_status_tiket')
                   ->where('users_id', $userUuid)
-                  ->whereIn('status_baru', ['persyaratan_lengkap', 'data_tidak_sesuai']);
+                  ->whereIn('status_baru', ['persyaratan_lengkap', 'data_tidak_sesuai', 'pembuatan_draft_skt']);
             });
 
         if ($filterTime) {
@@ -338,5 +339,15 @@ class TicketController extends Controller
             'alamat_sekretariat'       => $formulir->alamat_sekretariat ?? '-',
             'jenis_pencatatan'         => ($permohonan && $permohonan->jenis_permohonan == 'perubahan') ? 'Perubahan' : 'Baru',
         ]);
+    }
+
+
+    public function unduhSurat(Request $request, string $uuid, WordTemplateServiceSieko $pdfService)
+    {
+        $ticket = Tiket::where('uuid', $uuid)
+            ->where('verifikator_data_id', $request->user()->uuid)
+            ->firstOrFail();
+
+        return $pdfService->generateSuratRegistrasiOrmas($ticket);
     }
 }

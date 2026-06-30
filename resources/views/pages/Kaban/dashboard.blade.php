@@ -113,23 +113,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="#" 
-                                            target="_blank"
-                                            class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
-                                                <i class="ti ti-eye mr-1"></i> Lihat Draft
-                                        </a>
-                                        <form action="#" method="POST" class="inline">
-                                            @csrf
-                                            <input type="hidden" name="status" value="skt_disetujui">
-                                            <button type="submit" class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
-                                                <i class="ti ti-check mr-1"></i> TTD Digital
-                                            </button>
-                                        </form>
+                                        <
                                         <button type="button" 
-                                                data-notiket="{{ $tiket->no_tiket }}"
-                                                class="btn-tolak-kaban inline-flex items-center justify-center px-3 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 font-bold text-xs transition-all shadow-sm">
-                                            <i class="ti ti-x mr-1"></i> Tolak
+                                                class="btn-selesai inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-check mr-1"></i> selesai
                                         </button>
+                                        
                                     </div>
                                 </td>
                             </tr>
@@ -148,7 +137,7 @@
             </div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col">
+        <!-- <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30">
                 <h3 class="flex items-center text-gray-900 dark:text-white font-black italic">
                     <i class="ti ti-history text-blue-600 me-2 text-xl"></i> Riwayat Penandatanganan
@@ -197,7 +186,7 @@
             <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700">
                 {{ $tiketHistory->links() }}
             </div>
-        </div>
+        </div> -->
     </div>
 
     <div id="modalTolakKaban" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full items-center justify-center p-4">
@@ -228,3 +217,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/js/kaban.js')
+@endpush

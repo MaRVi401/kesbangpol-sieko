@@ -133,6 +133,16 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        @if($ticket->status === 'pembuatan_draft_skt')
+                                            <a href="{{ route('verif_data.ticket.download-docx', $ticket->uuid) }}" 
+                                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 transition-all shadow-sm"
+                                                title="Unduh Surat">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                </svg>
+                                                Unduh Surat
+                                            </a>
+                                        @endif
                                         <button type="button"
                                             data-modal-target="detail-modal-{{ $ticket->uuid }}" 
                                             data-modal-toggle="detail-modal-{{ $ticket->uuid }}"
