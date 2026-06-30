@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Models\JejakAudit;
+use App\Services\WordTemplateServiceSieko;
+use App\Models\User;
+use App\Models\DraftSkt;
+use App\Models\SuratRegistrasiOrmas;
 
 class TicketController extends Controller
 {
@@ -19,8 +23,8 @@ class TicketController extends Controller
         $search = $request->input('search');
 
         $query = Tiket::with(['user', 'layanan'])
-            ->whereIn('status', ['diajukan', 'review_berita_acara']) 
-            ->whereNull('petugas_id');
+            ->where('status', 'diajukan')
+            ->whereNull('verifikator_data_id');
 
         if ($search) {
             $query->where(function (Builder $q) use ($search) {
@@ -42,7 +46,7 @@ class TicketController extends Controller
     public function handle(Request $request, string $uuid): RedirectResponse
     {
         $ticket = Tiket::where('uuid', $uuid)
-            ->whereNull('petugas_id')
+            ->whereNull('verifikator_data_id')
             ->firstOrFail();
 
         DB::transaction(function () use ($ticket, $request) {
@@ -50,8 +54,9 @@ class TicketController extends Controller
             $statusBaru = ($statusSebelumnya === 'diajukan') ? 'pemeriksaan_kelengkapan' : 'review_berita_acara';
 
             $ticket->update([
-                'petugas_id' => $request->user()->uuid,
-                'status'     => $statusBaru,
+                'petugas_id'          => $request->user()->uuid,
+                'verifikator_data_id' => $request->user()->uuid,
+                'status'              => $statusBaru,
             ]);
 
             DB::table('riwayat_status_tiket')->insert([
@@ -69,8 +74,8 @@ class TicketController extends Controller
                 'aksi'       => 'update',
                 'nama_tabel' => 'tiket',
                 'record_id'  => $ticket->uuid,
-                'data_lama'  => ['status' => 'diajukan', 'petugas_id' => null],
-                'data_baru'  => ['status' => 'pemeriksaan_kelengkapan', 'petugas_id' => $request->user()->uuid],
+                'data_lama'  => ['status' => 'diajukan', 'petugas_id' => null, 'verifikator_data_id' => null],
+                'data_baru'  => ['status' => 'pemeriksaan_kelengkapan', 'petugas_id' => $request->user()->uuid, 'verifikator_data_id' => $request->user()->uuid],
                 'ip_address' => $request->ip()
             ]);
         });
@@ -85,7 +90,7 @@ class TicketController extends Controller
         $search = $request->input('search');
 
         $query = Tiket::with(['user', 'layanan', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
-            ->where('petugas_id', $request->user()->uuid)
+            ->where('verifikator_data_id', $request->user()->uuid)
             ->whereIn('status', ['pemeriksaan_kelengkapan', 'review_berita_acara']);
 
         if ($search) {
@@ -107,7 +112,6 @@ class TicketController extends Controller
 
     public function update(Request $request, string $uuid): RedirectResponse
     {
-        // 1. Tambahkan validasi untuk catatan_lapangan
         $request->validate([
             'status'           => 'required|in:persyaratan_lengkap,data_tidak_sesuai,pembuatan_draft_skt', 
             'komentar'         => 'required|string|min:1',
@@ -115,14 +119,13 @@ class TicketController extends Controller
         ]);
 
         $ticket = Tiket::where('uuid', $uuid)
-            ->where('petugas_id', $request->user()->uuid)
+            ->where('verifikator_data_id', $request->user()->uuid)
             ->firstOrFail();
 
         $statusLama = $ticket->status;
 
         DB::transaction(function () use ($request, $ticket, $statusLama) {
             
-            // 2. Simpan catatan_lapangan ke dalam database
             $ticket->update([
                 'status'           => $request->status,
                 'petugas_id'       => null, 
@@ -214,9 +217,126 @@ class TicketController extends Controller
             'formulirPermohonanBaruOrmas.formulirIsian'
         ])
         ->where('uuid', $uuid)
-        ->where('petugas_id', $request->user()->uuid)
+        ->where('verifikator_data_id', $request->user()->uuid)
         ->firstOrFail();
 
-        return view('pages.PetugasVerifikasiData.ticket.show', compact('ticket'));
+        $analisList = User::where('role', 'analis_kebijakan_ahli_muda')->get();
+
+        return view('pages.PetugasVerifikasiData.ticket.show', compact('ticket', 'analisList'));
+    }
+
+    public function previewPdf(Request $request, string $uuid, WordTemplateServiceSieko $pdfService)
+    {
+        $ticket = Tiket::with('beritaAcaraLapangan')
+            ->where('uuid', $uuid)
+            ->where('verifikator_data_id', $request->user()->uuid)
+            ->firstOrFail();
+
+        return $pdfService->generateDokumenBeritaAcara($ticket);
+    }
+
+    public function kirimKeAnalis(Request $request, string $uuid): RedirectResponse
+    {
+        $request->validate([
+            'status'    => 'required|in:pembuatan_draft_skt,data_tidak_sesuai', 
+            'komentar'  => 'required_if:status,data_tidak_sesuai|nullable|string',
+            'analis_id' => 'required_if:status,pembuatan_draft_skt|nullable|exists:users,uuid',
+        ]);
+
+        $ticket = Tiket::with([
+            'permohonanSkt', 
+            'formulirPermohonanBaruOrmas.formulirIsian'
+        ])
+        ->where('uuid', $uuid)
+        ->where('verifikator_data_id', $request->user()->uuid)
+        ->firstOrFail();
+
+        $statusLama = $ticket->status;
+
+        DB::transaction(function () use ($request, $ticket, $statusLama) {
+            
+            $ticket->update([
+                'status'     => $request->status,
+                'petugas_id' => null, 
+            ]);
+
+            if ($request->filled('komentar')) {
+                DB::table('komentar_tiket')->insert([
+                    'uuid'       => (string) Str::uuid(),
+                    'tiket_id'   => $ticket->uuid,
+                    'users_id'   => $request->user()->uuid,
+                    'komentar'   => $request->komentar,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            if ($request->status === 'pembuatan_draft_skt') {
+                
+                DB::table('berita_acara_lapangan')
+                    ->where('tiket_id', $ticket->uuid)
+                    ->update(['is_sesuai' => true]);
+
+                $this->generateSuratRegistrasi($ticket, $request->analis_id);
+
+                DraftSkt::create([
+                    'tiket_id'  => $ticket->uuid,
+                    'analis_id' => $request->analis_id,
+                ]);
+            }
+
+            DB::table('riwayat_status_tiket')->insert([
+                'uuid'              => (string) Str::uuid(),
+                'tiket_id'          => $ticket->uuid,
+                'users_id'          => $request->user()->uuid,
+                'status_sebelumnya' => $statusLama,
+                'status_baru'       => $request->status,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]);
+        });
+
+        $pesanSukses = $request->status === 'pembuatan_draft_skt' 
+            ? 'Tiket berhasil diteruskan ke Analis Muda.' 
+            : 'Tiket ditolak dan dikembalikan ke pemohon.';
+
+        return redirect()
+            ->route('verif_data.ticket.workdesk')
+            ->with('success', $pesanSukses);
+    }
+
+    private function generateSuratRegistrasi(Tiket $ticket, string $analisId): void
+    {
+        $permohonan = $ticket->permohonanSkt;
+        $formulir   = $ticket->formulirPermohonanBaruOrmas;
+        $isian      = $formulir ? $formulir->formulirIsian : null;
+
+        SuratRegistrasiOrmas::create([
+            'tiket_id'                 => $ticket->uuid,
+            'analis_id'                => $analisId,
+            'nama_organisasi_pemohon'  => $formulir->nama_pemohon ?? '-',
+            'nomor_surat_pemohon'      => $formulir->nomor ?? '-',
+            'tanggal_surat_pemohon'    => $formulir->tanggal_permohonan ?? now(),
+            'perihal_surat_pemohon'    => $formulir->perihal ?? '-',
+            'nama_ormas'               => $formulir->nama_organisasi ?? '-',
+            'tanggal_berdiri'          => $isian->tanggal_pendirian ?? now(),
+            'bidang_kegiatan'          => $permohonan->bidang_kegiatan ?? '-',
+            'npwp'                     => $formulir->nomor_npwp_organisasi ?? null,
+            'sk_kepengurusan_penerbit' => '-', 
+            'sk_kepengurusan_nomor'    => '-', 
+            'sk_kepengurusan_periode'  => $permohonan->periode_sk_kepengurusan ?? '-',
+            'nama_ketua'               => $formulir->nama_ketua ?? '-',
+            'nama_sekretaris'          => $formulir->nama_sekretaris ?? '-',
+            'nama_bendahara'           => $formulir->nama_bendahara ?? '-',
+            'akta_notaris_keterangan'  => 'Akta Pendirian',
+            'akta_notaris_nama'        => $permohonan->nama_notaris ?? '-',
+            'akta_notaris_nomor'       => '-',
+            'akta_notaris_tanggal'     => $permohonan->tanggal_akte,
+            'sk_kemenkumham_keterangan'=> 'Pengesahan Badan Hukum',
+            'sk_kemenkumham_nomor'     => $permohonan->nomor_sk_kemenkumham ?? '-',
+            'sk_kemenkumham_tanggal'   => $permohonan->tanggal_sk_kemenkumham,
+            'alamat_sekretariat'       => $formulir->alamat_sekretariat ?? '-',
+            'jenis_pencatatan'         => ($permohonan && $permohonan->jenis_permohonan == 'perubahan') ? 'Perubahan' : 'Baru',
+        ]);
     }
 }

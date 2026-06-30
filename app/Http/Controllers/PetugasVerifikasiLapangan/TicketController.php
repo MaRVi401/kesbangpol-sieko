@@ -18,7 +18,7 @@ class TicketController extends Controller
     {
         $tiketVerifikasi = Tiket::with(['layanan', 'user', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
             ->where('status', 'persyaratan_lengkap')
-            ->whereNull('petugas_id') 
+            ->whereNull('verifikator_lapangan_id') 
             ->latest()
             ->paginate(10);
 
@@ -29,13 +29,14 @@ class TicketController extends Controller
     {
         $tiket = Tiket::findOrFail($uuid);
         
-        if (is_null($tiket->petugas_id)) {
+        if (is_null($tiket->verifikator_lapangan_id)) {
             $statusLama = $tiket->status;
 
             DB::transaction(function () use ($tiket, $request, $statusLama) {
                 $tiket->update([
-                    'petugas_id' => $request->user()->uuid,
-                    'status'     => 'verifikasi_lapangan'
+                    'petugas_id'              => $request->user()->uuid,
+                    'verifikator_lapangan_id' => $request->user()->uuid,
+                    'status'                  => 'verifikasi_lapangan'
                 ]);
 
                 RiwayatStatusTiket::create([
@@ -66,7 +67,7 @@ class TicketController extends Controller
                 'skt_diterbitkan',
                 'skt_ditolak' 
             ])
-            ->where('petugas_id', $userUuid)
+            ->where('verifikator_lapangan_id', $userUuid)
             ->latest()
             ->paginate(10);
 
@@ -85,7 +86,7 @@ class TicketController extends Controller
 
         $tiketWorkdesk = Tiket::with(['layanan', 'user', 'permohonanSkt', 'formulirPermohonanBaruOrmas'])
             ->where('status', 'verifikasi_lapangan')
-            ->where('petugas_id', $userUuid)
+            ->where('verifikator_lapangan_id', $userUuid)
             ->latest()
             ->paginate(10);
 
@@ -103,7 +104,7 @@ class TicketController extends Controller
             'formulirPermohonanBaruOrmas.formulirIsian'
         ])
         ->where('uuid', $uuid)
-        ->where('petugas_id', $request->user()->uuid)
+        ->where('verifikator_lapangan_id', $request->user()->uuid)
         ->firstOrFail();
 
         return view('pages.petugas_verifikasi_lapangan.workdesk.show', compact('ticket'));
@@ -382,7 +383,7 @@ class TicketController extends Controller
 
             if ($request->hasFile('file_berita_acara_path')) {
                 $file = $request->file('file_berita_acara_path');
-                $path = $file->store('berita_acara_scan', 'public');
+                $path = $file->store('berita_acara_scan', 'local');
                 
                 $tiket->beritaAcaraLapangan->update([
                     'file_berita_acara_path' => $path
@@ -392,7 +393,10 @@ class TicketController extends Controller
             $statusLama = $tiket->status;
             $statusBaru = 'review_berita_acara'; 
             
-            $tiket->update(['status' => $statusBaru]);
+            $tiket->update([
+                'status'     => $statusBaru,
+                'petugas_id' => $tiket->verifikator_data_id
+            ]);
 
             RiwayatStatusTiket::create([
                 'uuid'              => (string) Str::uuid(),

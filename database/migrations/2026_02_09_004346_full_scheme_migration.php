@@ -103,6 +103,8 @@ return new class extends Migration
             $table->foreignUuid('users_id')->constrained('users', 'uuid')->cascadeOnDelete();
             $table->foreignUuid('layanan_id')->constrained('layanan', 'uuid');
             $table->foreignUuid('petugas_id')->nullable()->constrained('users', 'uuid');
+            $table->foreignUuid('verifikator_data_id')->nullable()->constrained('users', 'uuid')->nullOnDelete();
+            $table->foreignUuid('verifikator_lapangan_id')->nullable()->constrained('users', 'uuid')->nullOnDelete();
             $table->string('no_tiket')->unique();
             $table->string('lampiran')->nullable();
             $table->text('deskripsi')->nullable();
@@ -330,11 +332,63 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->timestamps();
         });
+
+        Schema::create('surat_registrasi_ormas', function (Blueprint $table) {
+            $table->uuid('uuid')->primary();
+            
+            $table->foreignUuid('tiket_id')->constrained('tiket', 'uuid')->cascadeOnDelete();
+            $table->foreignUuid('analis_id')->nullable()->constrained('users', 'uuid')->nullOnDelete();
+
+            $table->string('nomor_surat_registrasi')->nullable();
+            
+            $table->string('nama_organisasi_pemohon');
+            $table->string('nomor_surat_pemohon');
+            $table->date('tanggal_surat_pemohon');
+            $table->string('perihal_surat_pemohon');
+
+            $table->string('nama_ormas');
+            $table->date('tanggal_berdiri');
+            $table->string('bidang_kegiatan');
+            $table->string('npwp')->nullable();
+
+            $table->string('sk_kepengurusan_penerbit');
+            $table->string('sk_kepengurusan_nomor');
+            $table->string('sk_kepengurusan_periode');
+            
+            $table->string('nama_ketua');
+            $table->string('nama_sekretaris');
+            $table->string('nama_bendahara');
+
+            $table->string('akta_notaris_keterangan')->nullable();
+            $table->string('akta_notaris_nama')->nullable();
+            $table->string('akta_notaris_nomor')->nullable();
+            $table->date('akta_notaris_tanggal')->nullable();
+            
+            $table->string('sk_kemenkumham_keterangan')->nullable();
+            $table->string('sk_kemenkumham_nomor')->nullable();
+            $table->date('sk_kemenkumham_tanggal')->nullable();
+
+            $table->text('alamat_sekretariat');
+            $table->date('masa_berlaku_sampai')->nullable();
+            $table->date('tanggal_ditetapkan')->nullable();
+
+            $table->string('penandatangan_nama')->nullable();
+            $table->string('penandatangan_jabatan')->nullable();
+            $table->string('penandatangan_pangkat')->nullable();
+            $table->string('penandatangan_nip')->nullable();
+
+            $table->enum('jenis_pencatatan', ['Baru', 'Perubahan'])->default('Baru');
+
+            $table->string('file_surat_ttd_basah_path')->nullable();
+
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('jejak_audit');
+        Schema::dropIfExists('surat_registrasi_ormas');
         Schema::dropIfExists('log_keamanan');
         Schema::dropIfExists('komentar_tiket');
         Schema::dropIfExists('riwayat_status_tiket');

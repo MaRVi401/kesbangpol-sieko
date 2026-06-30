@@ -159,6 +159,8 @@ Route::middleware('auth')->group(function () {
 
     // 3. Petugas Verifikasi Data
     Route::middleware('can:petugas_verifikasi_data')->prefix('verifikator-data')->name('verif_data.')->group(function () {
+        
+Route::post('/ticket/{uuid}/kirim-analis', [\App\Http\Controllers\PetugasVerifikasiData\TicketController::class, 'kirimKeAnalis'])->name('ticket.kirim-analis');
         Route::controller(\App\Http\Controllers\PetugasVerifikasiData\TicketController::class)->name('ticket.')->group(function () {
             Route::get('/tiket-masuk', 'index')->name('index');
             Route::post('/tiket/{uuid}/handle', 'handle')->name('handle');
@@ -171,6 +173,8 @@ Route::middleware('auth')->group(function () {
 
 
             Route::get('/revisi', 'revisi')->name('revisi');
+
+            
 
 
             Route::get('/tiket/{uuid}/preview-pdf', 'previewPdf')->name('preview-pdf');
@@ -208,13 +212,25 @@ Route::middleware('auth')->group(function () {
         });
     });
     // 5. Analis Kebijakan Ahli Muda
-    Route::middleware('can:analis_kebijakan_ahli_muda')->prefix('analis')->name('analis.')->group(function () {});
+    Route::middleware('can:analis_kebijakan_ahli_muda')->prefix('analis')->name('analis.')->group(function () {
+        Route::get('/dashboard/unduh-surat/{tiket:uuid}', [\App\Http\Controllers\Analis\DashboardController::class, 'unduhSuratRegistrasi'])->name('unduh.surat');
+
+        Route::post('/dashboard/unggah-ttd-basah', [\App\Http\Controllers\Analis\DashboardController::class, 'unggahTtdBasah'])->name('unggah.ttd_basah');
+
+    });
 
     // 6. Kabid Kesbak
-    Route::middleware('can:kabid_kesbak')->prefix('kabid')->name('kabid.')->group(function () {});
+    Route::middleware('can:kabid_kesbak')->prefix('kabid')->name('kabid.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Kabid\PersetujuanKabidController::class, 'index'])->name('dashboard');
+        Route::post('/dashboard/proses/{uuid}', [App\Http\Controllers\Kabid\PersetujuanKabidController::class, 'proses'])->name('tiket.proses');
+    });
 
     // 7. Sekban
-    Route::middleware('can:sekban')->prefix('sekban')->name('sekban.')->group(function () {});
+    Route::middleware('can:sekban')->prefix('sekban')->name('sekban.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Sekban\DashboardController::class, 'index'])->name('dashboard');
+    
+        Route::post('/dashboard/proses/{uuid}', [App\Http\Controllers\Sekban\DashboardController::class, 'proses'])->name('tiket.proses');
+    });
 
 
     // 8. Kaban

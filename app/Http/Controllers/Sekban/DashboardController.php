@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Sekban;
 use App\Http\Controllers\Controller;
 use App\Models\Tiket;
 use Illuminate\Http\Request;
+use App\Models\RiwayatStatusTiket;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {

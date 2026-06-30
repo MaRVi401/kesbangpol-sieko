@@ -1,70 +1,47 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Realtime Clock
-    setInterval(() => {
-        const clock = document.getElementById('realtime-clock');
-        if (clock) clock.textContent = new Date().toLocaleTimeString('en-GB');
-    }, 1000);
+import Swal from 'sweetalert2';
 
-    // 2. SweetAlert untuk Tombol Terima
-    const btnsTerima = document.querySelectorAll('.btn-terima');
-    btnsTerima.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const form = this.closest('form');
+document.addEventListener('DOMContentLoaded', function () {
+    
+    // 1. Tangkap semua form dengan class 'form-paraf'
+    const formsParaf = document.querySelectorAll('.form-paraf');
+    
+    formsParaf.forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Hentikan proses submit bawaan browser
             
             Swal.fire({
-                title: 'Terima Tiket?',
-                text: "Apakah Anda yakin ingin MENERIMA tiket ini? Tiket akan disetujui.",
+                title: 'Apakah Anda yakin?',
+                text: "Dokumen ini akan diparaf dan diteruskan ke Sekban.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#16a34a', // green-600
-                cancelButtonColor: '#6b7280',  // gray-500
-                confirmButtonText: '<i class="ti ti-check"></i> Ya, Terima!',
+                confirmButtonColor: '#059669', // Warna hijau disesuaikan dengan tombol
+                cancelButtonColor: '#ef4444', // Warna merah
+                confirmButtonText: '<i class="ti ti-check"></i> Ya, Paraf!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit();
+                    // Jika user klik "Ya", lanjutkan proses submit form
+                    form.submit(); 
                 }
             });
         });
     });
 
-    // 3. SweetAlert untuk Tombol Tolak (Dilengkapi Input Textarea)
-    const btnsTolak = document.querySelectorAll('.btn-tolak');
-    btnsTolak.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const form = this.closest('form');
-            const noTiket = this.dataset.notiket;
-            const inputKomentar = form.querySelector('.input-komentar');
+    // 2. Fungsi buka/tutup modal tolak (Bisa dipindahkan ke sini juga agar lebih rapi)
+    window.bukaModalTolak = function(uuid, no_tiket) {
+        document.getElementById('nomor_tiket_tolak').innerText = no_tiket;
+        
+        // Asumsi base URL untuk form action tolak
+        const baseUrl = window.location.origin + '/kabid/dashboard/proses';
+        document.getElementById('formTolakTiket').action = baseUrl + '/' + uuid;
+        
+        document.getElementById('modalTolakTiket').classList.remove('hidden');
+        document.getElementById('modalTolakTiket').classList.add('flex');
+    };
 
-            Swal.fire({
-                title: 'Tolak Tiket',
-                html: `Anda akan menolak tiket dengan nomor: <b>${noTiket}</b><br><br>Silakan masukkan alasan penolakan:`,
-                input: 'textarea',
-                inputPlaceholder: 'Ketik alasan penolakan di sini...',
-                inputAttributes: {
-                    'aria-label': 'Alasan penolakan',
-                    required: 'true'
-                },
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626', // red-600
-                cancelButtonColor: '#6b7280',  // gray-500
-                confirmButtonText: '<i class="ti ti-send"></i> Konfirmasi Tolak',
-                cancelButtonText: 'Batal',
-                preConfirm: (text) => {
-                    if (!text || text.trim() === '') {
-                        Swal.showValidationMessage('Alasan penolakan wajib diisi!');
-                        return false;
-                    }
-                    return text;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Masukkan teks dari sweetalert ke input hidden form
-                    inputKomentar.value = result.value;
-                    form.submit();
-                }
-            });
-        });
-    });
+    window.tutupModalTolak = function() {
+        document.getElementById('modalTolakTiket').classList.add('hidden');
+        document.getElementById('modalTolakTiket').classList.remove('flex');
+    };
+
 });

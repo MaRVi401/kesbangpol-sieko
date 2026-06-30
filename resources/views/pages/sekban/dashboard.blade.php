@@ -118,13 +118,10 @@
                                             class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
                                                 <i class="ti ti-eye mr-1"></i> Lihat Draft
                                         </a>
-                                        <form action="#" method="POST" class="inline">
-                                            @csrf
-                                            <input type="hidden" name="status" value="skt_disetujui">
-                                            <button type="submit" class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
-                                                <i class="ti ti-check mr-1"></i> Paraf Digital
-                                            </button>
-                                        </form>
+                                        <button type="button" 
+                                                class="btn-selesai inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-check mr-1"></i> selesai
+                                        </button>
                                         <button type="button" 
                                                 data-notiket="{{ $tiket->no_tiket }}"
                                                 class="btn-tolak-sekban inline-flex items-center justify-center px-3 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 font-bold text-xs transition-all shadow-sm">
@@ -227,4 +224,8 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        @vite('resources/js/sekban.js')
+    @endpush
 @endsection

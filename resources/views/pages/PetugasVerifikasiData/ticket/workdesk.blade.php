@@ -100,10 +100,17 @@
                                     {{ $ticket->layanan->nama }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="{{ route('verif_data.ticket.show', $ticket->uuid) }}"
-                                        class="inline-block bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm cursor-pointer transition-all shadow-sm">
-                                        Review & Proses
-                                    </a>
+                                    @if($ticket->status === 'review_berita_acara')
+                                        <a href="{{ route('verif_data.ticket.show', $ticket->uuid) }}"
+                                            class="inline-block bg-[#39ff14] hover:bg-[#32e012] text-black font-bold px-3 py-2 rounded-lg text-sm cursor-pointer transition-all shadow-sm">
+                                            Review Berita Acara
+                                        </a>
+                                    @else
+                                        <a href="{{ route('verif_data.ticket.show', $ticket->uuid) }}"
+                                            class="inline-block bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm cursor-pointer transition-all shadow-sm">
+                                            Review & Proses
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

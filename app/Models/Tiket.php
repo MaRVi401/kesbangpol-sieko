@@ -21,6 +21,8 @@ class Tiket extends Model
         'users_id', 
         'layanan_id', 
         'petugas_id', 
+        'verifikator_data_id',
+        'verifikator_lapangan_id',
         'no_tiket', 
         'lampiran',
         'deskripsi',
@@ -44,6 +46,16 @@ class Tiket extends Model
     public function petugas(): BelongsTo
     {
         return $this->belongsTo(User::class, 'petugas_id', 'uuid');
+    }
+
+    public function verifikatorData(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verifikator_data_id', 'uuid');
+    }
+
+    public function verifikatorLapangan(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verifikator_lapangan_id', 'uuid');
     }
 
     public function layanan(): BelongsTo
@@ -84,5 +96,10 @@ class Tiket extends Model
     public function getFormulirAttribute()
     {
         return $this->permohonanSkt ?? $this->formulirPermohonanBaruOrmas;
+    }
+
+    public function suratRegistrasiOrmas()
+    {
+        return $this->hasOne(SuratRegistrasiOrmas::class, 'tiket_id', 'uuid');
     }
 }

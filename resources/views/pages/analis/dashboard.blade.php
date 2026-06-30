@@ -48,6 +48,13 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 flex items-center gap-2" role="alert">
+                <i class="ti ti-x text-lg"></i>
+                <span class="font-medium">Gagal!</span> {{ session('error') }}
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="p-5 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm dark:bg-blue-900/10 dark:border-blue-900/20">
                 <div class="flex items-center justify-between mb-2">
@@ -117,6 +124,16 @@
                                             class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
                                                 <i class="ti ti-edit mr-1"></i> Buat Draft SKT
                                         </a>
+
+                                        <a href="{{ route('analis.unduh.surat', $tiket->uuid) }}" 
+                                            class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-download mr-1"></i> Unduh Surat
+                                        </a>
+                                        
+                                        <button type="button" onclick="openUploadModal('{{ $tiket->uuid }}', '{{ $tiket->no_tiket }}')"
+                                            class="inline-flex items-center justify-center px-3 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-upload mr-1"></i> Unggah TTD Basah
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -178,7 +195,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="#" class="text-blue-600 hover:underline font-bold text-xs">Lihat Detail</a>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="#" class="text-blue-600 hover:underline font-bold text-xs">Lihat Detail</a>
+                                        
+                                        <a href="{{ route('analis.unduh.surat', $history->uuid) }}" 
+                                           class="inline-flex items-center justify-center px-3 py-1.5 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
+                                           <i class="ti ti-download mr-1"></i> Unduh SKT
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -194,4 +218,53 @@
             </div>
         </div>
     </div>
+
+    <div id="uploadModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto h-full flex items-center justify-center bg-gray-900/60 dark:bg-gray-900/80 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div class="relative w-full max-w-lg transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="relative bg-white rounded-2xl shadow-2xl dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-700 rounded-t-2xl bg-gray-50/80 dark:bg-gray-700/50">
+                    <div>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white flex items-center">
+                            <i class="ti ti-file-upload text-purple-600 me-2 text-xl"></i> Unggah Dokumen TTD Basah
+                        </h3>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">No. Tiket: <span id="modal_display_tiket" class="font-bold text-purple-600 dark:text-purple-400"></span></p>
+                    </div>
+                    <button type="button" onclick="closeUploadModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white transition-colors">
+                        <i class="ti ti-x text-lg"></i>
+                        <span class="sr-only">Tutup modal</span>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <form id="uploadForm" action="{{ route('analis.unggah.ttd_basah') ?? '#' }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="tiket_uuid" id="modal_input_uuid" value="">
+                        
+                        <div class="mb-5">
+                            <label class="block mb-2 text-sm font-bold text-gray-900 dark:text-white" for="file_dokumen">
+                                File Surat Organisasi <span class="text-red-500">*</span>
+                            </label>
+                            <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-2.5 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 transition-all" 
+                                   id="file_dokumen" name="file_dokumen" type="file" required accept=".pdf,.jpg,.jpeg,.png">
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Format yang didukung: PDF, JPG, PNG (Maks 2MB). Pastikan tanda tangan dan stempel terlihat jelas.</p>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <button type="button" onclick="closeUploadModal()" class="text-gray-700 bg-white border border-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-100 font-bold rounded-lg text-sm px-5 py-2.5 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 transition-colors shadow-sm">
+                                Batal
+                            </button>
+                            <button type="submit" class="text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:outline-none focus:ring-purple-300 font-bold rounded-lg text-sm px-5 py-2.5 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800 transition-all shadow-sm flex items-center">
+                                <i class="ti ti-cloud-upload mr-2"></i> Simpan Dokumen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  
 @endsection
+
+@push('scripts')
+    @vite('resources/js/dashboard-analis.js')
+@endpush
