@@ -236,5 +236,8 @@ Route::middleware('auth')->group(function () {
 
 
     // 8. Kaban
-    Route::middleware('can:kaban')->prefix('kaban')->name('kaban.')->group(function () {});
+    Route::middleware('can:kaban')->prefix('kaban')->name('kaban.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Kaban\DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/ticket/tanda-tangan', [App\Http\Controllers\Kaban\DashboardController::class, 'tandaTangan'])->name('ticket.tanda-tangan');
+    });
 });

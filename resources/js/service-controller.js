@@ -1,208 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('form-pencatatan-ormas');
-    if (!form) return;
-
-    const saveStatusElement = document.getElementById('save-status');
-    let tiketUuidInput = document.getElementById('tiket_uuid');
-    let timeoutId;
-
-    // 1. Fungsi Kompresi (Dibuat lebih ringkas mengikuti skema lampiran-controller)
-    const compressImageToWebP = async (file) => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
-                    canvas.toBlob((blob) => {
-                        resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: "image/webp", lastModified: Date.now() }));
-                    }, 'image/webp', 0.7);
-                };
-            };
-        });
-    };
-
-    // 2. Auto-compress gambar saat file dipilih
-    form.querySelectorAll('input[type="file"]').forEach(input => {
-        input.addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Opsional: Tetap pertahankan batas 5MB per 1 file jika mau
-            if (file.size > (5 * 1024 * 1024)) {
-                Swal.fire({
-                    icon: 'warning', title: 'Ukuran File Terlalu Besar!',
-                    text: `Maksimal ukuran yang diizinkan per satu file adalah 5 MB.`
-                });
-                e.target.value = '';
-                return; 
-            }
-
-            if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg') {
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerText = 'Mengompresi gambar...';
-
-                try {
-                    const webpFile = await compressImageToWebP(file);
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(webpFile);
-                    e.target.files = dataTransfer.files; 
-                } catch (err) {
-                    console.error('Compression failed:', err);
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }
-            }
-        });
-    });
-
-    // 3. Tangani Submit Form Utama
-    form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-
-        // --- SKEMA BARU: Pengecekan Total Ukuran File 8MB ---
-        let totalSize = 0;
-        this.querySelectorAll('input[type="file"]').forEach(input => {
-            if (input.files.length > 0) totalSize += input.files[0].size;
-        });
-
-        if (totalSize > (8 * 1024 * 1024)) {
-            Swal.fire({
-                icon: 'error', 
-                title: 'Batas Ukuran Terlampaui!',
-                html: `Total keseluruhan file Anda adalah <b>${(totalSize / 1048576).toFixed(2)} MB</b>.<br>Maksimal total lampiran form ini adalah <b>8 MB</b>.`,
-                confirmButtonColor: '#d33'
-            });
-            return; // Hentikan submit jika lebih dari 8 MB
-        }
-        // ----------------------------------------------------
-
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <svg class="animate-spin h-5 w-5 mr-3 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Memproses...
-        `;
-
-        try {
-            const formData = new FormData(this);
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            });
-
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const result = await response.json();
-
-                if (response.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Tahap 1 Berhasil!',
-                        text: result.message || `Data tiket ${result.no_tiket || ''} tersimpan.`,
-                        confirmButtonText: 'Lanjut Unggah Lampiran',
-                        confirmButtonColor: '#1d4ed8',
-                        allowOutsideClick: false
-                    }).then((sweetResult) => {
-                        if (sweetResult.isConfirmed) {
-                            window.location.href = result.redirect_url || this.getAttribute('data-history-url') || '/history';
-                        }
-                    });
-                } else {
-                    let errorHtml = '';
-                    if (result.errors) {
-                        errorHtml = '<div style="text-align: left;"><ul class="pl-5 text-sm list-disc text-gray-700">';
-                        Object.entries(result.errors).forEach(([field, err]) => {
-                            let cleanFieldName = field.replace(/\./g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                            errorHtml += `<li class="mb-1"><b>${cleanFieldName}:</b> ${err[0]}</li>`; 
-                        });
-                        errorHtml += '</ul></div>';
-                    } else {
-                        errorHtml = `<p>${result.message || ''}</p>`;
-                    }
-
-                    Swal.fire({
-                        icon: 'warning', title: 'Periksa Kembali Form Anda', html: errorHtml, confirmButtonColor: '#d33', confirmButtonText: 'Perbaiki Data'
-                    });
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
-                }
-            } else {
-                const htmlText = await response.text();
-                document.open();
-                document.write(htmlText);
-                document.close();
-            }
-        } catch (error) {
-            Swal.fire({ icon: 'error', title: 'Sistem Error', text: 'Terjadi kegagalan koneksi.', confirmButtonColor: '#d33' });
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-        }
-    });
-
-    // 4. Fitur Autosave (Tidak dirubah logikanya)
-    const performAutosave = () => {
-        saveStatusElement.innerText = "Menyimpan draft...";
-        const formData = new FormData(form);
-        
-        for (let [key, value] of Array.from(formData.entries())) {
-            if (value instanceof File) {
-                formData.delete(key);
-            }
-        }
-
-        if (tiketUuidInput && tiketUuidInput.value) {
-            formData.set('tiket_uuid', tiketUuidInput.value);
-        }
-        
-        fetch(form.getAttribute('data-autosave-url'), {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(res => {
-            if (res.status === 'success') {
-                tiketUuidInput.value = res.tiket_uuid; 
-                saveStatusElement.innerText = res.message; 
-            }
-        })
-        .catch(error => {
-            saveStatusElement.innerText = "Gagal menyimpan draft.";
-        });
-    };
-
-    form.addEventListener('input', function(e) {
-        if (e.target.type === 'file') return; 
-        clearTimeout(timeoutId);
-        saveStatusElement.innerText = "Mengetik...";
-        timeoutId = setTimeout(performAutosave, 2000); 
-    });
-
-    // 5. Fitur Autofill Dummy (Tidak dirubah logikanya)
-    const btnAutofill = document.getElementById('btn-autofill');
+const btnAutofill = document.getElementById('btn-autofill');
     if (btnAutofill) {
-        btnAutofill.addEventListener('click', function(e) {
+        btnAutofill.addEventListener('click', async function(e) {
             e.preventDefault();
             const fill = (name, value) => {
                 const elements = document.getElementsByName(name);
@@ -213,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // Isian Dummy Data
             fill('jenis_permohonan', 'baru');
             fill('nomor', '001/DEV/ORMAS/V/2026');
             fill('perihal', 'Permohonan Pencatatan Ormas Baru');
@@ -287,14 +84,69 @@ document.addEventListener('DOMContentLoaded', () => {
             fill('formulir_isian[keputusan_tertinggi_organisasi]', 'Musyawarah Besar');
             fill('formulir_isian[sumber_keuangan]', 'Iuran Anggota');
 
+            const createDummyImage = () => {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 400; 
+                    canvas.height = 400;
+                    const ctx = canvas.getContext('2d');
+                    
+                    ctx.fillStyle = '#cccccc';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '30px Arial';
+                    ctx.fillText('Dummy Image', 100, 200);
+
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], 'dummy-lampiran.jpg', { 
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    }, 'image/jpeg', 0.8);
+                });
+            };
+
+            const createDummyPdf = () => {
+                const pdfBase64 = "JVBERi0xLjEKJcKlwrQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCAzMDAgMTQ0XQovQ29udGVudHMgNCAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCAzMgo+PgpzdHJlYW0KQlQKL0YxIDEyIFRmCjEwIDEwIFRkCihEdW1teSBQREYpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNyAwMDAwMCBuIAowMDAwMDAwMDY1IDAwMDAwIG4gCjAwMDAwMDAxMjIgMDAwMDAgbiAKMDAwMDAwMDIxMiAwMDAwMCBuIAowMDAwMDAwMjk0IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKMzQzCiUlRU9GCg==";
+                const byteCharacters = atob(pdfBase64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                return new File([byteArray], 'dummy-dokumen.pdf', { 
+                    type: 'application/pdf', 
+                    lastModified: Date.now() 
+                });
+            };
+
+            const dummyImageFile = await createDummyImage();
+            const dummyPdfFile = createDummyPdf();
+
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                const acceptAttr = (input.getAttribute('accept') || '').toLowerCase();
+                const dataTransfer = new DataTransfer();
+
+                if (acceptAttr.includes('.pdf') && !acceptAttr.includes('image/*') && !acceptAttr.includes('file_tanda_tangan_pemohon')) {
+                    dataTransfer.items.add(dummyPdfFile);
+                } else if (acceptAttr.includes('image/*') || acceptAttr.includes('.jpg') || acceptAttr.includes('.png')) {
+                    dataTransfer.items.add(dummyImageFile);
+                } else {
+                    dataTransfer.items.add(dummyPdfFile);
+                }
+
+                input.files = dataTransfer.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Dummy Data Diisi!',
+                    title: 'Dummy Data & Lampiran Diisi!',
                     timer: 2500,
                     showConfirmButton: false
                 });
             }
         });
     }
-});

@@ -243,13 +243,7 @@ class ServiceController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status'       => 'success',
-                'uuid'         => $tiket->uuid,
-                'no_tiket'     => $tiket->no_tiket,
-                'message'      => 'Tahap 1 selesai. Lanjut unggah lampiran dokumen.',
-                'redirect_url' => route('pemohon.services.lampiran', $tiket->uuid)
-            ], 200);
+            return redirect()->route('pemohon.services.lampiran', $tiket->uuid)->with('success', 'Tahap 1 selesai. Lanjut unggah lampiran dokumen.');
 
         } catch (\Exception $e) {
             DB::rollBack();

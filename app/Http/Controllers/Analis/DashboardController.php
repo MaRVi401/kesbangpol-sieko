@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Analis;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tiket;
+use App\Models\DraftSkt;
 use App\Models\SuratRegistrasiOrmas;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
@@ -13,18 +14,21 @@ use Illuminate\Support\Facades\DB;
 use App\Models\RiwayatStatusTiket;
 use Illuminate\Support\Facades\Auth;
 
-
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // Menampilkan tiket yang butuh draft/paraf dari analis
         $tiketMenunggu = Tiket::with(['layanan', 'user', 'permohonanSkt'])
             ->where('status', 'pembuatan_draft_skt')
             ->latest()
             ->paginate(10, ['*'], 'antrean_page');
 
+        // Menambahkan status intermediate (menunggu_paraf_kabid, menunggu_paraf_sekban) ke history
         $tiketHistory = Tiket::with(['layanan', 'user', 'permohonanSkt'])
             ->whereIn('status', [
+                'menunggu_paraf_kabid',
+                'menunggu_paraf_sekban',
                 'menunggu_penandatanganan', 
                 'skt_disetujui', 
                 'penomoran_skt', 
@@ -37,6 +41,8 @@ class DashboardController extends Controller
         $totalMenunggu = Tiket::where('status', 'pembuatan_draft_skt')->count();
         
         $totalDraftSelesai = Tiket::whereIn('status', [
+                'menunggu_paraf_kabid',
+                'menunggu_paraf_sekban',
                 'menunggu_penandatanganan', 
                 'skt_disetujui', 
                 'penomoran_skt', 
@@ -74,7 +80,7 @@ class DashboardController extends Controller
                     ->setWarnings(false);
 
             $cleanNoTiket = str_replace(['/', '\\', ' '], '-', $tiket->no_tiket ?? $tiket->uuid);
-            $fileName = 'Surat_Registrasi_Ormas_' . $cleanNoTiket . '.pdf';
+            $fileName = 'Draft_SKT_' . $cleanNoTiket . '.pdf';
 
             return $pdf->download($fileName);
 
@@ -84,47 +90,33 @@ class DashboardController extends Controller
         }
     }
 
-    public function unggahTtdBasah(Request $request)
+    /**
+     * Fitur Paraf Draft oleh Analis
+     */
+    public function parafDraft(Request $request)
     {
-        // 1. Validasi input dari modal form
         $request->validate([
             'tiket_uuid' => 'required|exists:tiket,uuid',
-            'file_dokumen' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ], [
-            'file_dokumen.required' => 'File dokumen wajib diunggah.',
-            'file_dokumen.mimes' => 'Format file harus PDF, JPG, JPEG, atau PNG.',
-            'file_dokumen.max' => 'Ukuran file maksimal 2MB.',
         ]);
 
         DB::beginTransaction();
         try {
-            // 2. Ambil data tiket dan surat registrasi terkait
-            $tiket = Tiket::where('uuid', $request->tiket_uuid)->firstOrFail();
-            $suratRegistrasi = SuratRegistrasiOrmas::where('tiket_id', $tiket->uuid)->first();
+            $tiket = Tiket::where('uuid', $request->tiket_uuid)
+                ->where('status', 'pembuatan_draft_skt')
+                ->firstOrFail();
 
-            if (!$suratRegistrasi) {
-                return back()->with('error', 'Data Surat Registrasi belum dibuat. Silakan buat draft terlebih dahulu.');
-            }
-
-            // 3. Proses upload file ke storage (misal: storage/app/private/ttd_basah)
-            $file = $request->file('file_dokumen');
-            $cleanNoTiket = str_replace(['/', '\\', ' '], '-', $tiket->no_tiket);
-            $fileName = 'TTD_BASAH_' . $cleanNoTiket . '_' . time() . '.' . $file->getClientOriginalExtension();
-            
-            // Simpan file ke direktori yang aman
-            $path = $file->storeAs('private/ttd_basah', $fileName);
-
-            // 4. Update path di tabel surat_registrasi_ormas
-            $suratRegistrasi->update([
-                'file_surat_ttd_basah_path' => $path
-            ]);
-
-            // 5. Update status tiket dan catat riwayat
             $statusLama = $tiket->status;
-            $statusBaru = 'menunggu_penandatanganan'; // Ubah sesuai status setelah draf diunggah
+            $statusBaru = 'menunggu_paraf_kabid'; // Lanjut ke Kabid Kesbak
 
+            // Update status tiket
             $tiket->update(['status' => $statusBaru]);
 
+            // Set is_paraf_analis = true (pastikan Anda sudah menambahkan kolom ini di migrasi draft_skt sebelumnya)
+            DraftSkt::where('tiket_id', $tiket->uuid)->update([
+                'is_paraf_analis' => true
+            ]);
+
+            // Catat riwayat tiket
             RiwayatStatusTiket::create([
                 'tiket_id' => $tiket->uuid,
                 'users_id' => Auth::user()->uuid,
@@ -134,12 +126,12 @@ class DashboardController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Dokumen TTD Basah berhasil diunggah dan tiket diteruskan ke tahap selanjutnya.');
+            return back()->with('success', 'Draft SKT berhasil diparaf dan diteruskan ke Kabid Kesbak.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error unggah TTD Basah Analis: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan sistem saat mengunggah dokumen.');
+            Log::error('Error Paraf Analis: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan sistem saat memproses paraf: ' . $e->getMessage());
         }
     }
 }

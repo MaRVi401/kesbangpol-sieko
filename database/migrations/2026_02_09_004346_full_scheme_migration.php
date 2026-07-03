@@ -122,6 +122,8 @@ return new class extends Migration
                 'review_berita_acara',
                 'pembuatan_draft_skt',
                 'menunggu_penandatanganan',
+                'menunggu_paraf_kabid', 
+                'menunggu_paraf_sekban',
                 'skt_disetujui',
                 'penomoran_skt',
                 'skt_diterbitkan',
@@ -165,8 +167,9 @@ return new class extends Migration
             $table->foreignUuid('analis_id')->constrained('users', 'uuid');
             $table->string('no_skt_sementara')->nullable();
             $table->string('file_draft_path')->nullable();
-            $table->boolean('is_ttd_kabid')->default(false);
-            $table->boolean('is_ttd_sekban')->default(false);
+            $table->boolean('is_paraf_analis')->default(false);
+            $table->boolean('is_paraf_kabid')->default(false);
+            $table->boolean('is_paraf_sekban')->default(false);
             $table->boolean('is_ttd_kaban')->default(false);
             $table->timestamps();
         });
