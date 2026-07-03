@@ -120,16 +120,13 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
-                                            <i class="ti ti-edit mr-1"></i> Edit Draft SKT
-                                        </a>
 
                                         <a href="{{ route('analis.unduh.surat', $tiket->uuid) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
                                             <i class="ti ti-download mr-1"></i> Pratinjau Draft
                                         </a>
                                         
-                                        {{-- Tombol Paraf & Teruskan --}}
-                                        <form action="{{ route('analis.paraf_draft') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin sudah mengecek draft SKT ini dan ingin memparafnya untuk diteruskan ke Kabid Kesbak?')">
+                                        {{-- Tombol Paraf & Teruskan dengan class untuk Vite JS --}}
+                                        <form action="{{ route('analis.paraf_draft') }}" method="POST" class="form-paraf-draft">
                                             @csrf
                                             <input type="hidden" name="tiket_uuid" value="{{ $tiket->uuid }}">
                                             <button type="submit" class="inline-flex items-center justify-center px-3 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 font-bold text-xs transition-all shadow-sm">
@@ -219,3 +216,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/js/dashboard-analis.js')
+@endpush

@@ -29,37 +29,54 @@
             </div>
         @endif
         
-        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 gap-4">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Verifikasi Tiket #{{ $ticket->no_tiket }}</h2>
-                <p class="text-sm text-gray-500">Pemohon: {{ $ticket->user->nama ?? '-' }}</p>
-            </div>
-            
-            @if(empty($ticket->beritaAcaraLapangan))
-                <button type="button" 
-                        data-modal-target="update-modal-{{ $ticket->uuid }}" 
-                        data-modal-toggle="update-modal-{{ $ticket->uuid }}" 
-                        class="bg-green-400 hover:bg-green-500 text-gray-900 font-bold rounded-lg text-sm px-5 py-2.5 transition-all duration-200 shadow-[0_0_15px_rgba(163,230,53,0.6)] hover:shadow-[0_0_25px_rgba(163,230,53,0.9)] cursor-pointer">
-                    Buat Berita Acara
-                </button>
-            @else
-                <div class="flex flex-wrap items-center gap-2">
-                    <button type="button" 
-                            data-modal-target="edit-modal-{{ $ticket->uuid }}" 
-                            data-modal-toggle="edit-modal-{{ $ticket->uuid }}" 
-                            class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-lg text-sm px-4 py-2.5 transition-all duration-200 shadow-md cursor-pointer flex items-center gap-1">
-                        <i class="ti ti-edit text-base"></i> Edit Berita Acara
-                    </button>
-                    
-                    <a href="{{ route('verif_lapangan.ticket.generate_pdf', $ticket->uuid) }}" target="_blank"
-                       class="bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white font-bold rounded-lg text-sm px-4 py-2.5 transition-all duration-200 shadow-md flex items-center gap-1">
-                        <i class="ti ti-download text-base"></i> Download PDF
-                    </a>
+        {{-- KONDISI 1: Hanya tampilkan tombol aksi jika file scan BELUM diupload --}}
+        @if(empty($ticket->beritaAcaraLapangan->file_berita_acara_path))
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Verifikasi Tiket #{{ $ticket->no_tiket }}</h2>
+                    <p class="text-sm text-gray-500">Pemohon: {{ $ticket->user->nama ?? '-' }}</p>
                 </div>
-            @endif
-        </div>
+                
+                @if(empty($ticket->beritaAcaraLapangan))
+                    <button type="button" 
+                            data-modal-target="update-modal-{{ $ticket->uuid }}" 
+                            data-modal-toggle="update-modal-{{ $ticket->uuid }}" 
+                            class="bg-green-400 hover:bg-green-500 text-gray-900 font-bold rounded-lg text-sm px-5 py-2.5 transition-all duration-200 shadow-[0_0_15px_rgba(163,230,53,0.6)] hover:shadow-[0_0_25px_rgba(163,230,53,0.9)] cursor-pointer">
+                        Buat Berita Acara
+                    </button>
+                @else
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" 
+                                data-modal-target="edit-modal-{{ $ticket->uuid }}" 
+                                data-modal-toggle="edit-modal-{{ $ticket->uuid }}" 
+                                class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-lg text-sm px-4 py-2.5 transition-all duration-200 shadow-md cursor-pointer flex items-center gap-1">
+                            <i class="ti ti-edit text-base"></i> Edit Berita Acara
+                        </button>
+                        
+                        <a href="{{ route('verif_lapangan.ticket.generate_pdf', $ticket->uuid) }}" target="_blank"
+                           class="bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white font-bold rounded-lg text-sm px-4 py-2.5 transition-all duration-200 shadow-md flex items-center gap-1">
+                            <i class="ti ti-download text-base"></i> Download PDF
+                        </a>
+                    </div>
+                @endif
+            </div>
+        @else
+            {{-- Header statis jika file sudah terupload (Opsional tapi lebih rapi, agar info pemohon tetap ada) --}}
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Detail Tiket #{{ $ticket->no_tiket }}</h2>
+                    <p class="text-sm text-gray-500">Pemohon: {{ $ticket->user->nama ?? '-' }}</p>
+                </div>
+                <div>
+                    <span class="bg-green-100 text-green-800 text-sm font-bold px-3 py-1.5 rounded-lg border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 flex items-center gap-1">
+                        <i class="ti ti-circle-check text-lg"></i> Berita Acara Selesai & Terunggah
+                    </span>
+                </div>
+            </div>
+        @endif
 
-        @if(!empty($ticket->beritaAcaraLapangan))
+        {{-- KONDISI 2: Hanya tampilkan Form Upload jika Berita Acara sudah ada & file scan BELUM diupload --}}
+        @if(!empty($ticket->beritaAcaraLapangan) && empty($ticket->beritaAcaraLapangan->file_berita_acara_path))
         <div class="bg-blue-50 dark:bg-gray-800/50 rounded-xl shadow-sm border border-blue-200 dark:border-gray-700 p-6 mb-8 animate-fade-in">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Upload Hasil Scan Berita Acara</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Silakan unduh PDF di atas, lakukan tanda tangan basah bersama tim dan ormas, kemudian pindai (scan) menjadi format PDF lalu unggah di bawah ini.</p>
@@ -75,12 +92,6 @@
                     Upload Berkas Scan
                 </button>
             </form>
-            
-            @if($ticket->beritaAcaraLapangan->file_berita_acara_path)
-                <div class="mt-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-700 dark:text-green-400 font-semibold flex items-center gap-2">
-                    <i class="ti ti-circle-check text-lg"></i> Berkas fisik hasil scan telah terarsip dengan aman di dalam sistem.
-                </div>
-            @endif
         </div>
         @endif
 

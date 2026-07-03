@@ -218,6 +218,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard/unduh-surat/{tiket:uuid}', [\App\Http\Controllers\Analis\DashboardController::class, 'unduhSuratRegistrasi'])->name('unduh.surat');
 
         Route::post('/dashboard/unggah-ttd-basah', [\App\Http\Controllers\Analis\DashboardController::class, 'unggahTtdBasah'])->name('unggah.ttd_basah');
+        Route::post('/ticket/paraf-draft', [\App\Http\Controllers\Analis\DashboardController::class, 'parafDraft'])->name('paraf_draft');
 
     });
 
@@ -225,11 +226,18 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:kabid_kesbak')->prefix('kabid')->name('kabid.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Kabid\PersetujuanKabidController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/proses/{uuid}', [App\Http\Controllers\Kabid\PersetujuanKabidController::class, 'proses'])->name('tiket.proses');
+
+        Route::get('/dashboard/unduh-surat/{tiket:uuid}', [App\Http\Controllers\Kabid\DashboardController::class, 'unduhSuratRegistrasi'])->name('unduh.surat');
+        
+        Route::post('/dashboard/proses/{uuid}', [App\Http\Controllers\Kabid\DashboardController::class, 'proses'])->name('tiket.proses');
     });
 
     // 7. Sekban
     Route::middleware('can:sekban')->prefix('sekban')->name('sekban.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Sekban\DashboardController::class, 'index'])->name('dashboard');
+    
+        Route::post('/dashboard/proses/{uuid}', [App\Http\Controllers\Sekban\DashboardController::class, 'proses'])->name('tiket.proses');
+        Route::get('/dashboard/unduh-surat/{tiket:uuid}', [App\Http\Controllers\Sekban\DashboardController::class, 'unduhSuratRegistrasi'])->name('unduh.surat');
     
         Route::post('/dashboard/proses/{uuid}', [App\Http\Controllers\Sekban\DashboardController::class, 'proses'])->name('tiket.proses');
     });
@@ -238,6 +246,9 @@ Route::middleware('auth')->group(function () {
     // 8. Kaban
     Route::middleware('can:kaban')->prefix('kaban')->name('kaban.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Kaban\DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/ticket/tanda-tangan', [App\Http\Controllers\Kaban\DashboardController::class, 'tandaTangan'])->name('ticket.tanda-tangan');
+        Route::get('/dashboard/unduh-surat/{tiket:uuid}', [App\Http\Controllers\Kaban\DashboardController::class, 'unduhSuratRegistrasi'])->name('unduh.surat');
+        
         Route::post('/ticket/tanda-tangan', [App\Http\Controllers\Kaban\DashboardController::class, 'tandaTangan'])->name('ticket.tanda-tangan');
     });
 });

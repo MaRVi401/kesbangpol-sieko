@@ -1,4 +1,3 @@
-
 @extends('layouts.master')
 
 @section('title', 'Dashboard Kepala Badan')
@@ -121,11 +120,18 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <form action="{{ route('kaban.ticket.tanda-tangan') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menandatangani dan menyelesaikan tiket ini?')">
+                                        
+                                        {{-- Tombol Lihat Dokumen --}}
+                                        <a href="{{ route('kaban.unduh.surat', $tiket->uuid) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-eye mr-1"></i> Lihat Dokumen
+                                        </a>
+
+                                        {{-- Tombol Tanda Tangan dengan class js form-tanda-tangan --}}
+                                        <form action="{{ route('kaban.ticket.tanda-tangan') }}" method="POST" class="form-tanda-tangan inline">
                                             @csrf
                                             <input type="hidden" name="tiket_uuid" value="{{ $tiket->uuid }}">
                                             <button type="submit" class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
-                                                <i class="ti ti-check mr-1"></i> Selesai
+                                                <i class="ti ti-writing-sign mr-1"></i> Tanda Tangan & Setujui
                                             </button>
                                         </form>
                                     </div>
@@ -181,7 +187,10 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="#" target="_blank" class="text-blue-600 hover:underline font-bold text-xs">Download SKT</a>
+                                    {{-- Route ke PDF untuk Riwayat --}}
+                                    <a href="{{ route('kaban.unduh.surat', $history->uuid) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-1.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                        <i class="ti ti-download mr-1"></i> Unduh SKT
+                                    </a>
                                 </td>
                             </tr>
                         @empty
@@ -195,34 +204,6 @@
             <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700">
                 {{ $tiketHistory->links() }}
             </div>
-        </div>
-    </div>
-
-    <div id="modalTolakKaban" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full items-center justify-center p-4">
-        <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                    <i class="ti ti-alert-triangle text-red-600 text-2xl"></i> Penolakan Kaban
-                </h3>
-                <button onclick="tutupModalTolakKaban()" class="text-gray-400 hover:text-red-500"><i class="ti ti-x text-2xl"></i></button>
-            </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 italic">
-                Tiket: <span id="label_no_tiket" class="font-bold text-gray-900 dark:text-white"></span>
-            </p>
-            <form action="#" id="formTolakKaban" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="skt_ditolak">
-                <div class="mb-5">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-2 tracking-widest">Alasan Penolakan Final</label>
-                    <textarea name="komentar" required class="w-full min-h-30 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-2xl p-4 focus:ring-0 focus:border-red-500 outline-none resize-none"></textarea>
-                </div>
-                <div class="flex justify-end gap-3">
-                    <button type="button" onclick="tutupModalTolakKaban()" class="px-5 py-2.5 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-6 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 flex items-center gap-2">
-                        <i class="ti ti-send"></i> Konfirmasi Tolak
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 @endsection

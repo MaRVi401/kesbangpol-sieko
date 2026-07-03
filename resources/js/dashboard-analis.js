@@ -1,36 +1,29 @@
-const uploadModal = document.getElementById('uploadModal');
-const modalContent = document.getElementById('modalContent');
-const inputUuid = document.getElementById('modal_input_uuid');
-const displayTiket = document.getElementById('modal_display_tiket');
+import Swal from 'sweetalert2';
 
-window.openUploadModal = function(uuid, noTiket) {
-    inputUuid.value = uuid;
-    displayTiket.textContent = noTiket;
+document.addEventListener('DOMContentLoaded', function () {
+    // Tangkap semua form dengan class form-paraf-draft
+    const parafForms = document.querySelectorAll('.form-paraf-draft');
 
-    uploadModal.classList.remove('hidden');
-    
-    setTimeout(() => {
-        uploadModal.classList.remove('opacity-0');
-        uploadModal.classList.add('opacity-100');
-        modalContent.classList.remove('scale-95');
-        modalContent.classList.add('scale-100');
-    }, 10);
-}
+    parafForms.forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Mencegah form langsung tersubmit
 
-window.closeUploadModal = function() {
-    uploadModal.classList.remove('opacity-100');
-    uploadModal.classList.add('opacity-0');
-    modalContent.classList.remove('scale-100');
-    modalContent.classList.add('scale-95');
-
-    setTimeout(() => {
-        uploadModal.classList.add('hidden');
-        document.getElementById('uploadForm').reset();
-    }, 300);
-}
-
-uploadModal.addEventListener('click', function(e) {
-    if (e.target === uploadModal) {
-        window.closeUploadModal();
-    }
+            Swal.fire({
+                title: 'Konfirmasi Paraf',
+                text: 'Apakah Anda yakin sudah mengecek draft SKT ini dan ingin memparafnya untuk diteruskan ke Kabid Kesbak?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#9333ea', // Menyesuaikan dengan warna bg-purple-600 Tailwind
+                cancelButtonColor: '#6b7280',  // Warna abu-abu untuk tombol batal
+                confirmButtonText: 'Ya, Paraf & Teruskan!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Jika user klik Ya, submit form secara terprogram
+                    form.submit();
+                }
+            });
+        });
+    });
 });

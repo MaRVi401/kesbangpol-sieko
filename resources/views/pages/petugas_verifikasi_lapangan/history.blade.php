@@ -130,10 +130,10 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         {{-- Tombol Lihat Berita Acara yang akan mengarah ke method lihatBeritaAcara di Controller --}}
-                                        <a href="{{ route('verif_lapangan.ticket.berita-acara', $ticket->uuid) }}"
+                                        <a href="{{ route('verif_lapangan.ticket.show', $ticket->uuid) }}"
                                             class="inline-flex items-center px-3 py-2 text-sm font-bold text-center text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:text-green-800 focus:ring-4 focus:outline-none focus:ring-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40 transition-all shadow-sm">
                                             <i class="ti ti-file-text mr-1.5 text-lg"></i>
-                                            Berita Acara
+                                            Lihat Detail & Berita Acara
                                         </a>
                                     </div>
                                 </td>

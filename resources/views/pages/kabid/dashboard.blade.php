@@ -76,7 +76,7 @@
                             <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">No. Tiket</th>
                             <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Pengaju</th>
                             <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Status</th>
-                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400 text-center">Aksi (Paraf/Tolak)</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
@@ -92,11 +92,16 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100 rounded-lg dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                        MENUNGGU PARAF KABID
+                                        {{ str_replace('_', ' ', $tiket->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
+                                        {{-- Tombol Pratinjau Draft --}}
+                                        <a href="{{ route('kabid.unduh.surat', $tiket->uuid) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-eye mr-1"></i> Pratinjau Draft
+                                        </a>
+
                                         <form action="{{ route('kabid.tiket.proses', $tiket->uuid) }}" method="POST" class="inline form-paraf">
                                             @csrf
                                             <input type="hidden" name="action" value="setujui">
@@ -104,19 +109,13 @@
                                                 <i class="ti ti-check mr-1"></i> Paraf Dokumen
                                             </button>
                                         </form>
-
-                                        <!-- <button type="button" 
-                                                onclick="bukaModalTolak('{{ $tiket->uuid }}', '{{ $tiket->no_tiket }}')"
-                                                class="btn-tolak inline-flex items-center justify-center px-3 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 transition-all shadow-sm font-bold text-xs">
-                                            <i class="ti ti-x mr-1"></i> Tolak
-                                        </button> -->
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="4" class="px-6 py-10 text-center italic text-gray-400 dark:text-gray-500 bg-white dark:bg-[#1e293b]">
-                                    Belum ada tiket yang berstatus 'Menunggu Penandatanganan' untuk diproses.
+                                    Belum ada tiket yang berstatus 'Menunggu Paraf Kabid' untuk diproses.
                                 </td>
                             </tr>
                         @endforelse
@@ -127,35 +126,66 @@
                 {{ $tiketMenunggu->links() }}
             </div>
         </div>
-    </div>
 
-    <div id="modalTolakTiket" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full items-center justify-center p-4">
-        <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 border border-gray-100 dark:border-gray-700 flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                    <i class="ti ti-alert-triangle text-red-600 text-2xl"></i> Tolak Tiket
+        {{-- RIWAYAT TIKET --}}
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col mb-8">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30">
+                <h3 class="flex items-center text-gray-900 dark:text-white font-black italic">
+                    <i class="ti ti-history text-blue-600 me-2 text-xl"></i> Riwayat Tiket Diproses (Kabid)
                 </h3>
             </div>
-
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Anda akan menolak tiket dengan nomor: <span id="nomor_tiket_tolak" class="font-bold text-gray-900 dark:text-white"></span>
-            </p>
-
-            <form id="formTolakTiket" method="POST" action="">
-                @csrf
-                <input type="hidden" name="action" value="tolak">
-                <div class="mb-5">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-2 tracking-widest">Alasan Penolakan <span class="text-red-500">*</span></label>
-                    <textarea name="komentar" required class="w-full min-h-30 bg-gray-50 border-2 border-gray-100 text-sm rounded-2xl p-4 focus:ring-0 focus:border-red-500 outline-none resize-none transition-colors" placeholder="Masukkan alasan mengapa tiket ini ditolak..."></textarea>
-                </div>
-
-                <div class="flex justify-end gap-3 mt-5">
-                    <button type="button" onclick="tutupModalTolak()" class="px-5 py-2.5 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition">Batal</button>
-                    <button type="submit" class="px-6 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition flex items-center gap-2">
-                        <i class="ti ti-send"></i> Konfirmasi Tolak
-                    </button>
-                </div>
-            </form>
+            <div class="relative overflow-x-auto bg-white dark:bg-[#1e293b]">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-white dark:bg-[#1e293b] border-b border-gray-100 dark:border-gray-700/50">
+                        <tr>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">No. Tiket</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Organisasi</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400">Status Saat Ini</th>
+                            <th class="px-6 py-5 font-black tracking-widest text-blue-900 dark:text-blue-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                        @forelse($tiketHistory as $history)
+                            <tr class="hover:bg-blue-50/30 dark:hover:bg-slate-700/40">
+                                <td class="px-6 py-4">
+                                    <span class="inline-block px-2.5 py-1 text-xs font-black rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        {{ $history->no_tiket }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $history->permohonanSkt->nama_organisasi ?? 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($history->status == 'skt_ditolak')
+                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase text-red-700 bg-red-100 rounded-lg dark:bg-red-900/30 dark:text-red-400">
+                                            SKT DITOLAK
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase text-green-700 bg-green-100 rounded-lg dark:bg-green-900/30 dark:text-green-400">
+                                            {{ str_replace('_', ' ', $history->status) }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('kabid.unduh.surat', $history->uuid) }}" target="_blank"
+                                           class="inline-flex items-center justify-center px-3 py-1.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                           <i class="ti ti-eye mr-1"></i> Lihat Dokumen
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center italic text-gray-400">Belum ada riwayat tiket yang diparaf.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700">
+                {{ $tiketHistory->links() }}
+            </div>
         </div>
     </div>
 @endsection

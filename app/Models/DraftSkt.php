@@ -15,22 +15,26 @@ class DraftSkt extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    // SESUAIKAN BAGIAN INI
     protected $fillable = [
         'tiket_id',
         'analis_id',
         'no_skt_sementara',
         'file_draft_path',
-        'is_ttd_kabid',
-        'is_ttd_sekban',
-        'is_ttd_kaban'
+        'is_paraf_analis', // Tambahan baru
+        'is_paraf_kabid',  // Perubahan nama
+        'is_paraf_sekban', // Perubahan nama
+        'is_ttd_kaban'     // Tetap
     ];
 
+    // SESUAIKAN BAGIAN INI
     protected function casts(): array
     {
         return [
-            'is_ttd_kabid' => 'boolean',
-            'is_ttd_sekban' => 'boolean',
-            'is_ttd_kaban' => 'boolean',
+            'is_paraf_analis' => 'boolean', // Tambahan baru
+            'is_paraf_kabid'  => 'boolean', // Perubahan nama
+            'is_paraf_sekban' => 'boolean', // Perubahan nama
+            'is_ttd_kaban'    => 'boolean', // Tetap
         ];
     }
 

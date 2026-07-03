@@ -47,6 +47,13 @@
                 <span class="font-medium">Berhasil!</span> {{ session('success') }}
             </div>
         @endif
+        
+        @if(session('error'))
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 flex items-center gap-2" role="alert">
+                <i class="ti ti-x text-lg"></i>
+                <span class="font-medium">Gagal!</span> {{ session('error') }}
+            </div>
+        @endif
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="p-5 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm dark:bg-blue-900/10 dark:border-blue-900/20">
@@ -113,10 +120,18 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button type="button" 
-                                                class="btn-selesai inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
-                                            <i class="ti ti-check mr-1"></i> selesai
-                                        </button>
+                                        {{-- Gunakan $tiket->uuid, BUKAN $history->uuid --}}
+                                        <a href="{{ route('sekban.unduh.surat', $tiket->uuid) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                            <i class="ti ti-eye mr-1"></i> Pratinjau Draft
+                                        </a>
+
+                                        <form action="{{ route('sekban.tiket.proses', $tiket->uuid) }}" method="POST" class="form-paraf-sekban inline">
+                                            @csrf
+                                            <input type="hidden" name="action" value="setujui">
+                                            <button type="submit" class="inline-flex items-center justify-center px-3 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 font-bold text-xs transition-all shadow-sm">
+                                                <i class="ti ti-check mr-1"></i> Paraf Dokumen
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -135,7 +150,7 @@
             </div>
         </div>
 
-        <!-- <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col">
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden flex flex-col">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30">
                 <h3 class="flex items-center text-gray-900 dark:text-white font-black italic">
                     <i class="ti ti-history text-blue-600 me-2 text-xl"></i> Riwayat Persetujuan
@@ -163,14 +178,20 @@
                                     {{ $history->permohonanSkt->nama_organisasi ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($history->status == 'skt_disetujui')
-                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase text-green-700 bg-green-100 rounded-lg dark:bg-green-900/30 dark:text-green-400">DISETUJUI</span>
-                                    @else
+                                    @if($history->status == 'skt_ditolak')
                                         <span class="px-2.5 py-1 text-[10px] font-black uppercase text-red-700 bg-red-100 rounded-lg dark:bg-red-900/30 dark:text-red-400">DITOLAK</span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase text-green-700 bg-green-100 rounded-lg dark:bg-green-900/30 dark:text-green-400">{{ str_replace('_', ' ', $history->status) }}</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a href="#" target="_blank" class="text-blue-600 hover:underline font-bold text-xs">Download SKT</a>
+                                    <div class="flex items-center justify-center gap-2">
+                                        {{-- Di tabel history baru aman menggunakan $history->uuid --}}
+                                        <a href="{{ route('sekban.unduh.surat', $history->uuid) }}" target="_blank"
+                                           class="inline-flex items-center justify-center px-3 py-1.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-bold text-xs transition-all shadow-sm">
+                                           <i class="ti ti-eye mr-1"></i> Lihat Dokumen
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -184,34 +205,6 @@
             <div class="px-5 py-4 bg-gray-50 dark:bg-[#1e293b] border-t border-gray-100 dark:border-gray-700">
                 {{ $tiketHistory->links() }}
             </div>
-        </div> -->
-    </div>
-
-    <div id="modalTolakSekban" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full items-center justify-center p-4">
-        <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                    <i class="ti ti-alert-triangle text-red-600 text-2xl"></i> Penolakan Sekban
-                </h3>
-                <button onclick="tutupModalTolakSekban()" class="text-gray-400 hover:text-red-500"><i class="ti ti-x text-2xl"></i></button>
-            </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 italic">
-                Tiket: <span id="label_no_tiket" class="font-bold text-gray-900 dark:text-white"></span>
-            </p>
-            <form action="#" id="formTolakSekban" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="skt_ditolak">
-                <div class="mb-5">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-2 tracking-widest">Alasan Penolakan</label>
-                    <textarea name="komentar" required class="w-full min-h-30 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-2xl p-4 focus:ring-0 focus:border-red-500 outline-none resize-none"></textarea>
-                </div>
-                <div class="flex justify-end gap-3">
-                    <button type="button" onclick="tutupModalTolakSekban()" class="px-5 py-2.5 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-6 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 flex items-center gap-2">
-                        <i class="ti ti-send"></i> Konfirmasi Tolak
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 

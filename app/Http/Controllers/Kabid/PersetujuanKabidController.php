@@ -12,39 +12,37 @@ use Illuminate\Support\Facades\Auth;
 
 class PersetujuanKabidController extends Controller
 {
-    // 1. Fungsi untuk menampilkan Dashboard Kabid
     public function index()
     {
-        // Antrean: Tiket status 'menunggu_penandatanganan' TAPI belum diparaf Kabid
+        // Antrean: Mencari tiket yang sudah diparaf Analis dan masuk ke antrean Kabid
         $tiketMenunggu = Tiket::with(['layanan', 'user', 'permohonanSkt', 'draftSkt'])
-            ->where('status', 'menunggu_penandatanganan')
-            ->whereHas('draftSkt', function ($query) {
-                $query->where('is_ttd_kabid', false);
-            })
+            ->where('status', 'menunggu_paraf_kabid')
             ->latest()
             ->paginate(10, ['*'], 'antrean_page');
 
-        // Riwayat: Tiket yang sudah diparaf Kabid ATAU ditolak
+        // Riwayat: Tiket yang sudah diparaf Kabid (is_paraf_kabid = true) ATAU ditolak oleh Kabid ini
         $tiketHistory = Tiket::with(['layanan', 'user', 'permohonanSkt', 'draftSkt'])
             ->where(function ($query) {
                 $query->whereHas('draftSkt', function ($q) {
-                    $q->where('is_ttd_kabid', true);
-                })->orWhere('status', 'skt_ditolak');
+                    $q->where('is_paraf_kabid', true);
+                })->orWhereHas('riwayatStatus', function ($q) {
+                    $q->where('status_baru', 'skt_ditolak')
+                      ->where('users_id', Auth::user()->uuid);
+                });
             })
             ->latest()
             ->paginate(10, ['*'], 'history_page');
 
-        // Statistik Dashboard
-        $totalMenunggu = Tiket::where('status', 'menunggu_penandatanganan')
-            ->whereHas('draftSkt', function ($q) {
-                $q->where('is_ttd_kabid', false);
-            })->count();
+        $totalMenunggu = Tiket::where('status', 'menunggu_paraf_kabid')->count();
             
         $totalDiterima = Tiket::whereHas('draftSkt', function ($q) {
-                $q->where('is_ttd_kabid', true);
+                $q->where('is_paraf_kabid', true);
             })->count();
             
-        $totalDitolak = Tiket::where('status', 'skt_ditolak')->count();
+        $totalDitolak = Tiket::whereHas('riwayatStatus', function ($q) {
+                $q->where('status_baru', 'skt_ditolak')
+                  ->where('users_id', Auth::user()->uuid);
+            })->count();
 
         return view('pages.kabid.dashboard', compact(
             'tiketMenunggu', 
@@ -55,7 +53,6 @@ class PersetujuanKabidController extends Controller
         ));
     }
 
-    // 2. Fungsi untuk memproses (Setujui Paraf / Tolak)
     public function proses(Request $request, $uuid)
     {
         $request->validate([
@@ -70,19 +67,21 @@ class PersetujuanKabidController extends Controller
             $statusLama = $tiket->status;
 
             if ($request->action === 'setujui') {
-                // UPDATE PARAF KABID MENJADI TRUE
+                // Update paraf kabid menggunakan nama kolom yang baru dari migrasi
                 if ($tiket->draftSkt) {
-                    $tiket->draftSkt->is_ttd_kabid = true;
+                    $tiket->draftSkt->is_paraf_kabid = true;
                     $tiket->draftSkt->save();
                 }
                 
-                // Status tiket utama TETAP 'menunggu_penandatanganan' agar masuk ke antrean Sekban
+                // Ubah status menuju antrean Sekban
+                $statusBaru = 'menunggu_paraf_sekban';
+                $tiket->update(['status' => $statusBaru]);
                 
                 RiwayatStatusTiket::create([
                     'tiket_id' => $tiket->uuid,
                     'users_id' => Auth::user()->uuid,
                     'status_sebelumnya' => $statusLama,
-                    'status_baru' => 'paraf_kabid_selesai' // Penanda internal di riwayat
+                    'status_baru' => $statusBaru 
                 ]);
 
                 $pesan = 'Draft SKT berhasil diparaf dan diteruskan ke Sekban.';
