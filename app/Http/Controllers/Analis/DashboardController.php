@@ -60,7 +60,7 @@ class DashboardController extends Controller
         ));
     }
 
-    public function unduhSuratRegistrasi(Tiket $tiket)
+   public function unduhSuratRegistrasi(Tiket $tiket)
     {
         try {
             $suratRegistrasi = SuratRegistrasiOrmas::where('tiket_id', $tiket->uuid)->first();
@@ -69,9 +69,16 @@ class DashboardController extends Controller
                 return back()->with('error', 'Data Surat Registrasi Ormas belum tersedia untuk tiket ini.');
             }
 
+            // Mengambil data Kaban
+            $kaban = \App\Models\User::select('users.nama', 'kaban.nip')
+                ->join('kaban', 'users.uuid', '=', 'kaban.users_id')
+                ->where('users.role', 'kaban')
+                ->first();
+
             $data = [
                 'tiket'            => $tiket,
                 'surat_registrasi' => $suratRegistrasi,
+                'kaban'            => $kaban, // Melempar data Kaban ke view
                 'tanggal_cetak'    => Carbon::now()->locale('id')->translatedFormat('d F Y'),
             ];
 
@@ -82,7 +89,7 @@ class DashboardController extends Controller
             $cleanNoTiket = str_replace(['/', '\\', ' '], '-', $tiket->no_tiket ?? $tiket->uuid);
             $fileName = 'Draft_SKT_' . $cleanNoTiket . '.pdf';
 
-            return $pdf->download($fileName);
+            return $pdf->download($fileName); // Analis menggunakan download
 
         } catch (\Exception $e) {
             Log::error('Error HTML to PDF (Surat Registrasi): ' . $e->getMessage());

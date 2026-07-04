@@ -50,10 +50,17 @@ class DashboardController extends Controller
             if (!$suratRegistrasi) {
                 return back()->with('error', 'Data Surat Registrasi Ormas belum tersedia untuk tiket ini.');
             }
+            
+            // Mengambil data Kaban
+            $kaban = \App\Models\User::select('users.nama', 'kaban.nip')
+                ->join('kaban', 'users.uuid', '=', 'kaban.users_id')
+                ->where('users.role', 'kaban')
+                ->first();
 
             $data = [
                 'tiket'            => $tiket,
                 'surat_registrasi' => $suratRegistrasi,
+                'kaban'            => $kaban, // Melempar data Kaban ke view
                 'tanggal_cetak'    => Carbon::now()->locale('id')->translatedFormat('d F Y'),
             ];
 
@@ -62,8 +69,11 @@ class DashboardController extends Controller
                     ->setWarnings(false);
 
             $cleanNoTiket = str_replace(['/', '\\', ' '], '-', $tiket->no_tiket ?? $tiket->uuid);
+            
+            // Kaban memiliki penamaan file yang berbeda (SKT, bukan Draft_SKT)
             $fileName = 'SKT_' . $cleanNoTiket . '.pdf';
 
+            // Kaban menggunakan stream
             return $pdf->stream($fileName);
 
         } catch (\Exception $e) {

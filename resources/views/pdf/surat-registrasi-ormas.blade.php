@@ -5,7 +5,6 @@
     <title>Surat Registrasi Ormas</title>
     <style>
         @page {
-            /* Margin dokumen resmi */
             margin: 1.5cm 2cm 2cm 2cm; 
         }
         body { 
@@ -18,22 +17,20 @@
             position: relative;
         }
 
-        /* --- WATERMARK --- */
         #watermark {
             position: fixed;
-            top: 25%; /* Sesuaikan posisi vertikal ke tengah */
+            top: 25%; 
             left: 0;
             width: 100%;
             text-align: center;
-            opacity: 0.15; /* Tingkat transparansi watermark (0.1 - 0.3 ideal) */
-            z-index: -100; /* Memastikan berada di belakang teks */
+            opacity: 0.15; 
+            z-index: -100; 
         }
         #watermark img {
-            width: 450px; /* Ukuran besaran watermark */
+            width: 450px; 
             height: auto;
         }
 
-        /* --- KOP SURAT --- */
         .kop-surat {
             text-align: center;
             margin-bottom: 25px;
@@ -58,7 +55,6 @@
             margin-top: 3px;
         }
 
-        /* --- JUDUL SURAT --- */
         .judul-dokumen {
             text-align: center;
             margin-bottom: 25px;
@@ -75,7 +71,6 @@
             font-size: 11pt;
         }
 
-        /* --- ISI SURAT --- */
         .tabel-list {
             width: 100%;
             border-collapse: collapse;
@@ -88,7 +83,6 @@
         .tabel-list .nomor { width: 4%; text-align: left; }
         .tabel-list .konten { width: 96%; }
 
-        /* Tabel Rincian */
         .tabel-sub {
             width: 100%;
             border-collapse: collapse;
@@ -113,7 +107,6 @@
             padding: 1px 0;
         }
 
-        /* --- FOOTER & TANDA TANGAN --- */
         .footer-container {
             width: 100%;
             margin-top: 30px;
@@ -124,14 +117,13 @@
             vertical-align: top;
         }
         
-        /* Kotak Putus-putus */
         .dashed-box {
             border: 2px dashed #000;
             width: 130px;
             padding: 5px 0;
             text-align: center;
             font-weight: bold;
-            font-style: italic; /* Menyesuaikan gambar: font agak miring/italic */
+            font-style: italic; 
             font-size: 11pt;
             min-height: 18px; 
             margin-left: 10px;
@@ -141,7 +133,6 @@
 <body>
 
     @php
-        // LOGO KOP SURAT & WATERMARK
         $logoPathFisik = public_path('images/logo-subang.png'); 
         $logoBase64 = null;
         
@@ -166,7 +157,7 @@
 
     <div class="judul-dokumen">
         <h4>SURAT REGISTRASI PELAPORAN ORMAS</h4>
-        <p>Nomor : {{ $surat_registrasi->nomor_surat_registrasi }}</p>
+        <p>Nomor : {{ $surat_registrasi->nomor_surat_registrasi ?? '.........................................' }}</p>
     </div>
 
     <table class="tabel-list">
@@ -284,7 +275,6 @@
     </table>
 
     @php
-        // LOGIKA KOTAK PUTUS-PUTUS SESUAI PERMINTAAN GAMBAR (BARU, PERUBAHAN, REGISTRASI)
         $jenis_permohonan = strtolower($tiket->permohonanSkt->jenis_permohonan ?? 'baru');
         $teksBox = '';
         
@@ -293,7 +283,6 @@
         } elseif ($jenis_permohonan == 'registrasi') {
             $teksBox = 'Registrasi';
         }
-        // Jika 'baru', $teksBox tetap kosong string (''), sehingga div dashed-box tidak akan dicetak.
     @endphp
 
     <table class="footer-container">
@@ -311,15 +300,14 @@
                     <tr>
                         <td style="width: 15%;"></td> 
                         <td style="width: 85%; text-align: left;">
-                            Subang, {{ $surat_registrasi->tanggal_ditetapkan ? \Carbon\Carbon::parse($surat_registrasi->tanggal_ditetapkan)->locale('id')->translatedFormat('d F Y') : '-' }}<br>
-                            
-                            {!! nl2br(e($surat_registrasi->penandatangan_jabatan ?? 'ANALIS KEBIJAKAN AHLI MUDA')) !!}<br>
-                            
+                            Subang, {{ $surat_registrasi->tanggal_ditetapkan ? \Carbon\Carbon::parse($surat_registrasi->tanggal_ditetapkan)->locale('id')->translatedFormat('d F Y') : $tanggal_cetak }}<br>
+                            <br>
+                            <strong>KEPALA BADAN KESATUAN BANGSA DAN POLITIK</strong><br>
+                            <strong>KABUPATEN SUBANG</strong><br>
                             <br><br><br><br>
-                            
-                            <u><strong>{{ $surat_registrasi->analis->nama ?? $surat_registrasi->penandatangan_nama }}</strong></u><br>
-                            {{ $surat_registrasi->penandatangan_pangkat }}<br>
-                            NIP. {{ $surat_registrasi->penandatangan_nip }}
+                            <u><strong>{{ $kaban->nama ?? 'NAMA KABAN BELUM DISET' }}</strong></u><br>
+                            Pembina Utama Muda<br>
+                            NIP. {{ $kaban->nip ?? '-' }}
                         </td>
                     </tr>
                 </table>

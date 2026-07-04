@@ -238,10 +238,12 @@ class TicketController extends Controller
 
     public function kirimKeAnalis(Request $request, string $uuid): RedirectResponse
     {
+        // 1. Tambahkan validasi nomor_surat
         $request->validate([
-            'status'    => 'required|in:pembuatan_draft_skt,data_tidak_sesuai', 
-            'komentar'  => 'required_if:status,data_tidak_sesuai|nullable|string',
-            'analis_id' => 'required_if:status,pembuatan_draft_skt|nullable|exists:users,uuid',
+            'status'      => 'required|in:pembuatan_draft_skt,data_tidak_sesuai', 
+            'komentar'    => 'required_if:status,data_tidak_sesuai|nullable|string',
+            'analis_id'   => 'required_if:status,pembuatan_draft_skt|nullable|exists:users,uuid',
+            'nomor_surat' => 'required_if:status,pembuatan_draft_skt|nullable|string|max:255', // Tangkap nomor surat
         ]);
 
         $ticket = Tiket::with([
@@ -278,11 +280,14 @@ class TicketController extends Controller
                     ->where('tiket_id', $ticket->uuid)
                     ->update(['is_sesuai' => true]);
 
-                $this->generateSuratRegistrasi($ticket, $request->analis_id);
+                // 2. Lempar nomor_surat ke fungsi pembuatan surat
+                $this->generateSuratRegistrasi($ticket, $request->analis_id, $request->nomor_surat);
 
+                // 3. Simpan juga ke Draft SKT
                 DraftSkt::create([
-                    'tiket_id'  => $ticket->uuid,
-                    'analis_id' => $request->analis_id,
+                    'tiket_id'         => $ticket->uuid,
+                    'analis_id'        => $request->analis_id,
+                    'no_skt_sementara' => $request->nomor_surat, 
                 ]);
             }
 
@@ -306,7 +311,8 @@ class TicketController extends Controller
             ->with('success', $pesanSukses);
     }
 
-    private function generateSuratRegistrasi(Tiket $ticket, string $analisId): void
+    // 4. Tambahkan parameter $nomorSurat di sini
+    private function generateSuratRegistrasi(Tiket $ticket, string $analisId, string $nomorSurat): void
     {
         $permohonan = $ticket->permohonanSkt;
         $formulir   = $ticket->formulirPermohonanBaruOrmas;
@@ -315,6 +321,10 @@ class TicketController extends Controller
         SuratRegistrasiOrmas::create([
             'tiket_id'                 => $ticket->uuid,
             'analis_id'                => $analisId,
+            
+            // 5. Simpan nomor surat ke tabel surat_registrasi_ormas
+            'nomor_surat_registrasi'   => $nomorSurat, 
+            
             'nama_organisasi_pemohon'  => $formulir->nama_pemohon ?? '-',
             'nomor_surat_pemohon'      => $formulir->nomor ?? '-',
             'tanggal_surat_pemohon'    => $formulir->tanggal_permohonan ?? now(),

@@ -69,9 +69,16 @@ class DashboardController extends Controller
                 return back()->with('error', 'Data Surat Registrasi Ormas belum tersedia untuk tiket ini.');
             }
 
+            // Mengambil data Kaban
+            $kaban = \App\Models\User::select('users.nama', 'kaban.nip')
+                ->join('kaban', 'users.uuid', '=', 'kaban.users_id')
+                ->where('users.role', 'kaban')
+                ->first();
+
             $data = [
                 'tiket'            => $tiket,
                 'surat_registrasi' => $suratRegistrasi,
+                'kaban'            => $kaban, // Melempar data Kaban ke view
                 'tanggal_cetak'    => Carbon::now()->locale('id')->translatedFormat('d F Y'),
             ];
 
@@ -82,7 +89,7 @@ class DashboardController extends Controller
             $cleanNoTiket = str_replace(['/', '\\', ' '], '-', $tiket->no_tiket ?? $tiket->uuid);
             $fileName = 'Draft_SKT_' . $cleanNoTiket . '.pdf';
 
-            // Menggunakan stream agar bisa langsung tampil (pratinjau) di browser tab baru
+            // Sekban menggunakan stream untuk pratinjau
             return $pdf->stream($fileName);
 
         } catch (\Exception $e) {

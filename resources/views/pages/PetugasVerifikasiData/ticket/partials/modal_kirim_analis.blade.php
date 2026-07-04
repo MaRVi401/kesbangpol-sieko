@@ -26,6 +26,11 @@
                         </select>
                     </div>
 
+                    <div id="wrapper-nomor-surat" class="hidden">
+                        <label for="nomor_surat" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor Surat <span class="text-red-500">*</span></label>
+                        <input type="text" id="nomor_surat" name="nomor_surat" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Masukkan Nomor Surat...">
+                    </div>
+
                     <div id="wrapper-analis" class="hidden">
                         <label for="analis_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pilih Analis Muda yang Bertugas <span class="text-red-500">*</span></label>
                         <select id="analis_id" name="analis_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
