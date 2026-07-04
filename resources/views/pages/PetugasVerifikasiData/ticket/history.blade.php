@@ -135,8 +135,7 @@
                                     <div class="flex items-center justify-end gap-2">
                                         @if($ticket->status === 'pembuatan_draft_skt')
                                             <a href="{{ route('verif_data.ticket.download-docx', $ticket->uuid) }}" 
-                                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 transition-all shadow-sm"
-                                                title="Unduh Surat">
+                                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 transition-all shadow-sm">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                                 </svg>
@@ -146,8 +145,7 @@
                                         <button type="button"
                                             data-modal-target="detail-modal-{{ $ticket->uuid }}" 
                                             data-modal-toggle="detail-modal-{{ $ticket->uuid }}"
-                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800 transition-all shadow-sm"
-                                            title="Lihat Detail Tiket">
+                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800 transition-all shadow-sm">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -209,7 +207,6 @@
                                 <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                                 </svg>
-                                <span class="sr-only">Close modal</span>
                             </button>
                         </div>
                         <div class="p-6 space-y-4">
@@ -251,8 +248,23 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-                            <button data-modal-hide="detail-modal-{{ $ticket->uuid }}" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Tutup</button>
+                        <div class="flex items-center justify-between p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
+                            <button data-modal-hide="detail-modal-{{ $ticket->uuid }}" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition-colors">
+                                Tutup
+                            </button>
+                            @if($ticket->user && $ticket->user->no_wa)
+                                @php
+                                    $noWa = preg_replace('/^0/', '62', $ticket->user->no_wa);
+                                    $pesanWa = "Halo Bapak/Ibu {$ticket->user->nama},\n\nPermisi, menginformasikan bahwa permohonan Anda dengan Nomor Tiket *{$ticket->no_tiket}* telah selesai diproses dan Surat Registrasi (SKT) sudah ditandatangani.\n\nSilakan login ke sistem untuk mengunduh dokumen tersebut.\n\nTerima kasih.";
+                                    $linkWa = "https://wa.me/{$noWa}?text=" . urlencode($pesanWa);
+                                @endphp
+                                <a href="{{ $linkWa }}" target="_blank" class="inline-flex items-center text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 transition-all shadow-sm">
+                                    <svg class="w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                        <path fill-rule="evenodd" d="M12 2a10 10 0 0 1 7.072 17.072c-.1.125-.213.25-.333.37L19 22l-2.578-.286a10 10 0 1 1-4.422-19.714Zm-1.8 6.076c-.237 0-.46.012-.66.036-.3.036-.534.128-.7.275a2.127 2.127 0 0 0-.694 1.572c0 1.002.502 1.942 1.34 2.89.176.198.375.39.59.578.43.377.92.766 1.488 1.135 1.004.654 2.1 1.258 3.238 1.578.232.065.452.12.658.156.402.072.782.023 1.14-.143a2.533 2.533 0 0 0 1.23-1.393c.174-.523.174-1.026.12-1.127-.052-.102-.19-.153-.417-.267-.227-.113-1.336-.66-1.543-.736-.208-.076-.358-.113-.508.114-.15.226-.583.736-.713.886-.132.152-.264.17-.492.057-.227-.114-.954-.352-1.817-1.127-.672-.603-1.126-1.348-1.257-1.574-.132-.227-.015-.35.099-.463.103-.102.227-.266.34-.4.113-.134.152-.228.227-.38.076-.152.038-.285-.018-.399-.057-.114-.508-1.226-.696-1.68-.184-.442-.37-.382-.508-.389-.131-.007-.282-.008-.445-.008Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Hubungi Pemohon
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
